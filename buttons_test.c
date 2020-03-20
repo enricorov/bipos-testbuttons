@@ -76,10 +76,10 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 
 // here we do the interface drawing, there is no need to update (move to video memory) the screen
 
-draw_screen(app_data->col);
+// draw_screen(app_data->col);
 
 // if necessary, set the call timer screen_job in ms
-set_update_period(1, 5000);
+// set_update_period(1, 5000);
 }
 
 void key_press_screen(){
@@ -92,9 +92,9 @@ show_menu_animate(app_data->ret_f, (unsigned int)show_screen, ANIMATE_RIGHT);
 
 void screen_job(){
 // if necessary, you can use the screen data in this function
-struct app_data_** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to pointer to screen data  
+/* struct app_data_** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to pointer to screen data  
 struct app_data_ *	app_data = *app_data_p;				//	pointer to screen data
-
+ */
 // do periodic action: animation, counter increase, screen update,
 // rendering the interface, update (transfer to video memory) the screen
 
@@ -120,8 +120,8 @@ int result = 0;
 struct button_ *testButton;
 createButton(testButton,
 	50,
-	100,
 	50,
+	100,
 	100,
 	"YOLO",
 	COLOR_SH_WHITE,
@@ -132,18 +132,19 @@ createButton(testButton,
 
 switch (gest->gesture){
 	case GESTURE_CLICK: {			
-		//if ( ( gest->touch_pos_y >66) &&  ( gest->touch_pos_y < 110) ){ 
-		//	if ( ( gest->touch_pos_x >66) &&  ( gest->touch_pos_x < 110) ){
-					// touchscreen center
-					// Perform the actions
-					vibrate(1,70,0);
-					app_data->col = (app_data->col+1)%COLORS_COUNT;
-					drawButton(testButton);
-					repaint_screen_lines(0, 176);
-		//			}
-		//	}
-			break;
-		};
+
+
+				set_bg_color(COLOR_GREEN);
+				fill_screen_bg();
+				set_graph_callback_to_ram_1();
+
+				vibrate(1,70,0);
+				/* app_data->col = (app_data->col+1)%COLORS_COUNT; */
+				drawButton(testButton);
+				repaint_screen_lines(0, 176);
+
+				break;
+			};
 		case GESTURE_SWIPE_RIGHT: {	//	swipe to the right
 			// usually this is the exit from the application
 			show_menu_animate(app_data->ret_f, (unsigned int)show_screen, ANIMATE_RIGHT);	
@@ -171,7 +172,7 @@ switch (gest->gesture){
 	return result;
 };
 
-// custom function
+/* // custom function
 void draw_screen(int col){
 
 static int colors_bg[COLORS_COUNT] = {COLOR_SH_BLACK, COLOR_SH_BLUE,  COLOR_SH_RED, COLOR_SH_PURPLE};
@@ -187,4 +188,4 @@ set_fg_color(colors_fg[col]);
 
 text_out_center("Hello World!", 88, 60);
 
-};
+}; */
