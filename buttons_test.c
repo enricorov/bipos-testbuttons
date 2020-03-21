@@ -76,7 +76,8 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	else					//	if not, to the watchface
 		app_data->ret_f = show_watchface;
 	
-	// here we perform actions that are necessary if the function is launched for the first time from the menu: filling all data structures, etc.
+	
+	// setup part, the first graphics are created here
 
 	button_ sampleButton;
 	createButton(	&sampleButton, 
@@ -87,8 +88,6 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 					COLOR_SH_PURPLE,
 					0,
 					testCallbackFunction);
-
-	// initial drawing
 
 	setLayerBackground(getCurrentLayer(app_data), COLOR_SH_BLACK);
 	
@@ -130,7 +129,7 @@ void screen_job(){		// periodic
 
 
 	refreshLayer(getCurrentLayer(app_data));
-	set_update_period(1, 500);
+//	set_update_period(1, 500);
 }
 
 int dispatch_screen (void *param){
