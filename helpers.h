@@ -5,6 +5,7 @@
 #define __HELPERS__
 
 #include "libbip_EN.h"
+//#include "buttons_test.h"
 
 #define MAX_NUM_BUTTONS 4
 #define MAX_SIZE_BUTTON_LABEL 5
@@ -35,26 +36,38 @@ typedef struct button_
             filling,
             text;
 
-    void*  callbackFunction;
+    void (*callbackFunction)(void *);
 
 } button_;
 
-typedef struct Gcontext_ {
+typedef struct Layer_ {
 
     button_ buttonArray[MAX_NUM_BUTTONS];   // all buttons
     unsigned short index;                   // current valid button, init=0
-    short   backgroundColour;               // background for the current context
+    short   backgroundColour;               // background for the current Layer
 
-} Gcontext_;
+} Layer_;
 
-void spawnButton(button_ *button, Gcontext_ *ctx);
-void drawButton(button_ *button);
-short addButtonToContext(button_ *button, Gcontext_ *ctx);
-void createButton(button_ *button, short a, short b, short c, short d, char* label, short border,
+typedef struct app_data_t {
+			void* 	ret_f;					//	the address of the return function
+			Layer_	mainLayer;
+} app_data_t;
+
+void spawnButton(button_ *button, Layer_ *layer);       // adds button to layer and draws it - note: graphics are shown only after calling refresh_screen_lines()
+void drawButton(button_ *button);                       // draws a button only
+short addButtonToLayer(button_ *button, Layer_ *layer); // adds button to layer
+void createButton(  button_ *button,                    // initializing button with said parameters
+                    short a, short b, short c, short d, 
+                    char* label, short border,
                     short filling, short text, void* callbackFunction);
+
 long getLongColour(short colour);     // returns long from short versions
 void caffeine(void);                  // display never turns off
-void setContextBackground(Gcontext_ *ctx, short colour);
+void setLayerBackground(Layer_ *layer, short colour);
+/* Layer_ *createLayer(void);
+short destroyLayer(Layer_ * layer); */
+Layer_ *getCurrentLayer(app_data_t *app_data);  // returns layer currently in use
+void processTap(Layer_ *layer, int x, int y);                 // iterates over a layer for the button corresponding to a tap
 
 // DEFINITIONS ---------------------------------------------------
 
@@ -66,9 +79,54 @@ void caffeine(void){
 
 }
 
-void spawnButton(button_ *button, Gcontext_ *ctx){
+void processTap(Layer_ *layer, int x, int y) {
 
-    if(!addButtonToContext(button, ctx)){
+    short i;
+    button_ temp;
+    for(i = 0; i < layer->index; i++){
+        temp = layer->buttonArray[i];
+            // was the tap inside the button?
+        if (temp.a < x && temp.c > x && temp.b < y && temp.d > y)
+        {   
+            temp.callbackFunction(0);
+            vibrate(1,50,0);    // vibrate if successful
+        }
+
+    }
+
+}
+
+/* Layer_ *createLayer(void){
+
+    return pvPortMalloc(sizeof(Layer_));
+}
+short destroyLayer(Layer_ *layer) {
+
+    vPortFree(layer);
+} */
+
+void refreshLayer(Layer_ *layer){
+
+    set_bg_color(layer->backgroundColour);
+    fill_screen_bg();
+
+    short i;
+    for(i = 0; i < layer->index; i++){
+
+        drawButton(&layer->buttonArray[i]);
+    }
+
+    repaint_screen_lines(0, VIDEO_Y);
+}
+
+Layer_ *getCurrentLayer(app_data_t *app_data){
+
+    return &app_data->mainLayer;
+}
+
+void spawnButton(button_ *button, Layer_ *layer){
+
+    if(!addButtonToLayer(button, layer)){
 
         drawButton(button);
     }
@@ -105,7 +163,6 @@ void drawButton(button_ *button){       // graphics of the button
                             button->d);
 
     set_graph_callback_to_ram_1();      // moving the current drawings to the framebuffer?
-
 
     load_font();
     set_fg_color(getLongColour(button->text));
@@ -146,22 +203,27 @@ long getLongColour(short colour) {
 
 }
 
-void setContextBackground(Gcontext_ *ctx, short colour){
+void setLayerBackground(Layer_ *layer, short colour){
 
-    ctx->backgroundColour = colour;
+    layer->backgroundColour = colour;
 
 }
 
-short addButtonToContext(button_ *button, Gcontext_ *ctx){
+short getLayerBackground(Layer_ *layer) {
 
-    if(ctx->index >= MAX_NUM_BUTTONS){
-        // ctx full
+    return layer->backgroundColour;
+}
+
+short addButtonToLayer(button_ *button, Layer_ *layer){
+
+    if(layer->index >= MAX_NUM_BUTTONS){
+        // layer full
         //printError("DATABASE FULL");
         return 1;
     }
-    else { // add button to ctx
-        ctx->buttonArray[ctx->index] = *button;
-        ctx->index++;
+    else { // add button to layer
+        layer->buttonArray[layer->index] = *button;
+        layer->index++;
         return 0;
     }
 }

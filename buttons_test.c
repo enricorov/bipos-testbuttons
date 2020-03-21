@@ -6,7 +6,7 @@
 	
 */
 
-#include "helpers.h"
+//#include "helpers.h"
 #include "buttons_test.h"
 
 //	screen menu structure - each screen has its own
@@ -26,9 +26,17 @@ int main(int param0, char** argv){	//	here the variable argv is not defined
 	show_screen((void*) param0);
 }
 
+void testCallbackFunction(){
+
+	set_bg_color(COLOR_RED);
+	fill_screen_bg();
+	repaint_screen();
+
+}
+
 void show_screen (void *param0){
-struct app_data_** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data
-struct app_data_ *	app_data;					//	pointer to screen data
+app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data
+app_data_t *	app_data;					//	pointer to screen data
 
 Elf_proc_* proc;
 
@@ -53,11 +61,11 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	reg_menu(&screen_data, 0);
 
 	// allocate the necessary memory and place the data in it (the memory by the pointer stored at temp_buf_2 is released automatically by the function reg_menu of another screen)
-	*app_data_p = (struct app_data_ *)pvPortMalloc(sizeof(struct app_data_));
+	*app_data_p = (app_data_t *)pvPortMalloc(sizeof(app_data_t));
 	app_data = *app_data_p;		//	data pointer
 	
 	// clear the memory for data
-	_memclr(app_data, sizeof(struct app_data_));
+	_memclr(app_data, sizeof(app_data_t));
 	
 	//	param0 value contains a pointer to the data of the running process structure Elf_proc_
 	proc = param0;
@@ -69,84 +77,77 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 		app_data->ret_f = show_watchface;
 	
 	// here we perform actions that are necessary if the function is launched for the first time from the menu: filling all data structures, etc.
+
+	button_ sampleButton;
+	createButton(	&sampleButton, 
+					50, 50,
+					80, 80,
+					"",
+					COLOR_SH_WHITE,
+					COLOR_SH_PURPLE,
+					0,
+					testCallbackFunction);
+
+	// initial drawing
+
+	setLayerBackground(getCurrentLayer(app_data), COLOR_SH_BLACK);
 	
-	app_data->col=0;
-	  
+
+	spawnButton(&sampleButton, getCurrentLayer(app_data));
+
+	createButton(	&sampleButton, 
+					100, 100,
+					120, 120,
+					"",
+					COLOR_SH_WHITE,
+					COLOR_SH_PURPLE,
+					0,
+					0);
+
+	spawnButton(&sampleButton, getCurrentLayer(app_data));
+
 }	
 
-	//setContextBackground(COLOR_SH_BLACK);
-	caffeine();
+caffeine();
+set_update_period(1, 500);
 
-// here we do the interface drawing, there is no need to update (move to video memory) the screen
 
-// draw_screen(app_data->col);
 
-// if necessary, set the call timer screen_job in ms
-// set_update_period(1, 5000);
 }
 
 void key_press_screen(){
-struct app_data_** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data 
-struct app_data_ *	app_data = *app_data_p;				//	pointer to screen data
+	app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data 
+	app_data_t *	app_data = *app_data_p;				//	pointer to screen data
 
-// call the return function (usually this is the start menu), specify the address of the function of our application as a parameter
-show_menu_animate(app_data->ret_f, (unsigned int)show_screen, ANIMATE_RIGHT);	
+	// call the return function (usually this is the start menu), specify the address of the function of our application as a parameter
+	show_menu_animate(app_data->ret_f, (unsigned int)show_screen, ANIMATE_RIGHT);	
 };
 
-void screen_job(){
-// if necessary, you can use the screen data in this function
-/* struct app_data_** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to pointer to screen data  
-struct app_data_ *	app_data = *app_data_p;				//	pointer to screen data
- */
-// do periodic action: animation, counter increase, screen update,
-// rendering the interface, update (transfer to video memory) the screen
+void screen_job(){		// periodic
+	// if necessary, you can use the screen data in this function
+	app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to pointer to screen data  
+	app_data_t *	app_data = *app_data_p;				//	pointer to screen data
 
-/* app_data->col = (app_data->col+1)%COLORS_COUNT;
-draw_screen(app_data->col);
 
-// transfer screen lines that have been redrawn to video memory
-repaint_screen_lines(0, 176);
+	refreshLayer(getCurrentLayer(app_data));
 
-// if necessary, set the screen_job call timer again
-set_update_period(1, 5000); */
 }
 
 int dispatch_screen (void *param){
-struct app_data_** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data 
-struct app_data_ *	app_data = *app_data_p;				//	pointer to screen data
+app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data 
+app_data_t *	app_data = *app_data_p;				//	pointer to screen data
 
 // in case of rendering the interface, update (transfer to video memory) the screen
 
 struct gesture_ *gest = param;
 int result = 0;
 
-struct button_ testButton;
-
-createButton(&testButton,
-	50,
-	50,
-	100,
-	100,
-	"YOLO",
-	COLOR_SH_WHITE,
-	COLOR_SH_YELLOW,
-	COLOR_SH_RED,
-	0);
-
 
 switch (gest->gesture){
 	case GESTURE_CLICK: {			
 
-
-				//set_bg_color(COLOR_GREEN);
-				//fill_screen_bg();
-				//set_graph_callback_to_ram_1();
-
-				vibrate(1,70,0);
-				/* app_data->col = (app_data->col+1)%COLORS_COUNT; */
-				drawButton(&testButton);
-				repaint_screen_lines(0, 176);
-
+				processTap(getCurrentLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
+				
 				break;
 			};
 		case GESTURE_SWIPE_RIGHT: {	//	swipe to the right
@@ -175,21 +176,3 @@ switch (gest->gesture){
 	
 	return result;
 };
-
-/* // custom function
-void draw_screen(int col){
-
-static int colors_bg[COLORS_COUNT] = {COLOR_SH_BLACK, COLOR_SH_BLUE,  COLOR_SH_RED, COLOR_SH_PURPLE};
-static int colors_fg[COLORS_COUNT] = {COLOR_SH_AQUA,  COLOR_SH_WHITE, COLOR_SH_YELLOW, COLOR_SH_GREEN};
-
-set_bg_color(colors_bg[col]);
-fill_screen_bg();
-set_graph_callback_to_ram_1();
-// load fonts
-load_font();
-set_fg_color(colors_fg[col]);
-
-
-text_out_center("Hello World!", 88, 60);
-
-}; */

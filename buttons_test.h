@@ -6,21 +6,17 @@
 
 */
 
-#ifndef __APP_TEMPLATE_H__
-#define __APP_TEMPLATE_H__
-
+#ifndef __APP_BUTTONS_H__
+#define __APP_BUTTONS_H__
 #define COLORS_COUNT	4
 
-// the data structure for our screen
-struct app_data_ {
-			void* 	ret_f;					//	the address of the return function
-			int		col;					//	the current color of the font
-};
+#include "helpers.h"
 
 // template.c
 void 	show_screen (void *return_screen);
 void 	key_press_screen();
 int 	dispatch_screen (void *param);
 void 	screen_job();
-void	draw_screen(int col);
+void	testCallbackFunction();
+
 #endif
