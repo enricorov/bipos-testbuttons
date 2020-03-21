@@ -7,8 +7,8 @@
 #include "libbip_EN.h"
 //#include "buttons_test.h"
 
-#define MAX_NUM_BUTTONS 4
-#define MAX_SIZE_BUTTON_LABEL 5
+#define MAX_NUM_BUTTONS 6
+#define MAX_SIZE_BUTTON_LABEL 10
 
 enum event_ble_ {
     UNKNOWN,

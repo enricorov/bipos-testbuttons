@@ -30,7 +30,7 @@ void testCallbackFunction(){
 
 	set_bg_color(COLOR_RED);
 	fill_screen_bg();
-	repaint_screen();
+	repaint_screen_lines(0, VIDEO_Y);
 
 }
 
@@ -109,7 +109,7 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 }	
 
 caffeine();
-set_update_period(1, 500);
+//set_update_period(1, 500);
 
 
 
@@ -130,7 +130,7 @@ void screen_job(){		// periodic
 
 
 	refreshLayer(getCurrentLayer(app_data));
-
+	set_update_period(1, 500);
 }
 
 int dispatch_screen (void *param){
@@ -147,7 +147,7 @@ switch (gest->gesture){
 	case GESTURE_CLICK: {			
 
 				processTap(getCurrentLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
-				
+
 				break;
 			};
 		case GESTURE_SWIPE_RIGHT: {	//	swipe to the right
