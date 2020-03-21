@@ -39,23 +39,36 @@ typedef struct button_
 
 } button_;
 
-typedef struct database_ {
+typedef struct Gcontext_ {
 
     button_ buttonArray[MAX_NUM_BUTTONS];   // all buttons
     unsigned short index;                   // current valid button, init=0
+    short   backgroundColour;               // background for the current context
 
-} database_;
+} Gcontext_;
 
-void spawnButton(button_ *button, database_ *db);
+void spawnButton(button_ *button, Gcontext_ *ctx);
 void drawButton(button_ *button);
-short addButtonToDB(button_ *button, database_ *db);
+short addButtonToContext(button_ *button, Gcontext_ *ctx);
 void createButton(button_ *button, short a, short b, short c, short d, char* label, short border,
                     short filling, short text, void* callbackFunction);
 long getLongColour(short colour);     // returns long from short versions
+void caffeine(void);                  // display never turns off
+void setContextBackground(Gcontext_ *ctx, short colour);
 
-void spawnButton(button_ *button, database_ *db){
+// DEFINITIONS ---------------------------------------------------
 
-    if(!addButtonToDB(button, db)){
+void caffeine(void){
+
+  set_display_state_value (8, 1);
+  set_display_state_value (4, 1);
+  set_display_state_value (2, 1);
+
+}
+
+void spawnButton(button_ *button, Gcontext_ *ctx){
+
+    if(!addButtonToContext(button, ctx)){
 
         drawButton(button);
     }
@@ -77,25 +90,30 @@ void createButton(button_ *button, short a, short b, short c, short d, char* lab
 
 void drawButton(button_ *button){       // graphics of the button
 
-    set_bg_color(button->filling);
-    set_fg_color(button->border);
+    set_bg_color(getLongColour(button->filling));
+    set_fg_color(getLongColour(button->border ));
 
  //   fill_screen_bg();
-    draw_filled_rect_bg(    50,
-                            50,
-                            100,
-                            100);
+    draw_filled_rect_bg(    button->a,
+                            button->b,
+                            button->c,
+                            button->d);
+    
+    draw_rect(              button->a,
+                            button->b,
+                            button->c,
+                            button->d);
 
-     set_graph_callback_to_ram_1();      // moving the current drawings to the framebuffer?
-    repaint_screen_lines(0, 176);
-/*
+    set_graph_callback_to_ram_1();      // moving the current drawings to the framebuffer?
+
+
     load_font();
-    set_fg_color((long) button->text);
+    set_fg_color(getLongColour(button->text));
 
     text_out_center(    button->label,  // the text
-                        (int) (button->a + button->b) / 2,  // median
-                        (int) (button->a + button->c) / 2); */
-
+                        (int) (button->a + button->c) / 2,  // median
+                        (int) (button->b + button->d) / 2); 
+    repaint_screen_lines(0, 176);
 }
 
 long getLongColour(short colour) {
@@ -120,23 +138,30 @@ long getLongColour(short colour) {
             return COLOR_WHITE;
         case COLOR_SH_YELLOW:
             return COLOR_YELLOW;
-        default:
+        default:{
             // should never get here..
-    }
-
+            };
+    };
+    return 0;
 
 }
 
-short addButtonToDB(button_ *button, database_ *db){
+void setContextBackground(Gcontext_ *ctx, short colour){
 
-    if(db->index >= MAX_NUM_BUTTONS){
-        // db full
+    ctx->backgroundColour = colour;
+
+}
+
+short addButtonToContext(button_ *button, Gcontext_ *ctx){
+
+    if(ctx->index >= MAX_NUM_BUTTONS){
+        // ctx full
         //printError("DATABASE FULL");
         return 1;
     }
-    else { // add button to db
-        db->buttonArray[db->index] = *button;
-        db->index++;
+    else { // add button to ctx
+        ctx->buttonArray[ctx->index] = *button;
+        ctx->index++;
         return 0;
     }
 }

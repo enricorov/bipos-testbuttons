@@ -71,8 +71,11 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	// here we perform actions that are necessary if the function is launched for the first time from the menu: filling all data structures, etc.
 	
 	app_data->col=0;
-	
-}
+	  
+}	
+
+	//setContextBackground(COLOR_SH_BLACK);
+	caffeine();
 
 // here we do the interface drawing, there is no need to update (move to video memory) the screen
 
@@ -117,8 +120,9 @@ struct app_data_ *	app_data = *app_data_p;				//	pointer to screen data
 struct gesture_ *gest = param;
 int result = 0;
 
-struct button_ *testButton;
-createButton(testButton,
+struct button_ testButton;
+
+createButton(&testButton,
 	50,
 	50,
 	100,
@@ -126,7 +130,7 @@ createButton(testButton,
 	"YOLO",
 	COLOR_SH_WHITE,
 	COLOR_SH_YELLOW,
-	COLOR_SH_PURPLE,
+	COLOR_SH_RED,
 	0);
 
 
@@ -134,13 +138,13 @@ switch (gest->gesture){
 	case GESTURE_CLICK: {			
 
 
-				set_bg_color(COLOR_GREEN);
-				fill_screen_bg();
-				set_graph_callback_to_ram_1();
+				//set_bg_color(COLOR_GREEN);
+				//fill_screen_bg();
+				//set_graph_callback_to_ram_1();
 
 				vibrate(1,70,0);
 				/* app_data->col = (app_data->col+1)%COLORS_COUNT; */
-				drawButton(testButton);
+				drawButton(&testButton);
 				repaint_screen_lines(0, 176);
 
 				break;
