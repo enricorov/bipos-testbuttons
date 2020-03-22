@@ -57,6 +57,7 @@ typedef struct Layer_ {
 typedef struct Window_ {
 
     Layer_ layerArray[MAX_NUM_LAYERS];
+    short index;
 
 } Window_;
 
@@ -65,13 +66,14 @@ typedef struct app_data_t {
 			Layer_	mainLayer;
 } app_data_t;
 
-void    spawnButton(button_ *button, Layer_ *layer);       // adds button to layer and draws it - note: graphics are shown only after calling refresh_screen_lines()
-void    drawButton(button_ *button);                       // draws a button only
-short   addButtonToLayer(button_ *button, Layer_ *layer); // adds button to layer
 void    initButton(  button_ *button,                    // initializing button with said parameters
                     short a, short b, short c, short d, 
                     char* label, short border,
                     short filling, short text, void* callbackFunction);
+void    spawnButton(button_ *button, Layer_ *layer);       // adds button to layer and draws it - note: graphics are shown only after calling refresh_screen_lines()
+void    drawButton(button_ *button);                       // draws a button only
+short   addButtonToLayer(button_ *button, Layer_ *layer); // adds button to layer
+
 
 long    getLongColour(short colour);     // returns long from short versions
 void    caffeine(Caffeine_t coffee);     // set display backlight
@@ -98,13 +100,14 @@ void processTap(Layer_ *layer, int x, int y) {
 
     short i;
     button_ temp;
+    
     for(i = 0; i < layer->index; i++){
         temp = layer->buttonArray[i];
             // was the tap inside the button?
         if (temp.a < x && temp.c > x && temp.b < y && temp.d > y)
         {   
-            temp.callbackFunction(layer->buttonArray[i]);
             vibrate(1,50,0);    // vibrate if successful
+            temp.callbackFunction(layer->buttonArray[i]);
         }
 
     }
@@ -205,6 +208,20 @@ void spawnButton(button_ *button, Layer_ *layer){
     }
 }
 
+short addButtonToLayer(button_ *button, Layer_ *layer){
+
+    if(layer->index >= MAX_NUM_BUTTONS){
+        // layer full
+        //printError("DATABASE FULL");
+        return 1;
+    }
+    else { // add button to layer
+        layer->buttonArray[layer->index] = *button;
+        layer->index++;
+        return 0;
+    }
+}
+
 void initButton(button_ *button, short a, short b, short c, short d, char* label, short border,
                     short filling, short text, void* callbackFunction){     // populating the struct
 
@@ -283,20 +300,6 @@ void setLayerBackground(Layer_ *layer, short colour){
 short getLayerBackground(Layer_ *layer) {
 
     return layer->backgroundColour;
-}
-
-short addButtonToLayer(button_ *button, Layer_ *layer){
-
-    if(layer->index >= MAX_NUM_BUTTONS){
-        // layer full
-        //printError("DATABASE FULL");
-        return 1;
-    }
-    else { // add button to layer
-        layer->buttonArray[layer->index] = *button;
-        layer->index++;
-        return 0;
-    }
 }
 
 void logthis(const char *message)    {

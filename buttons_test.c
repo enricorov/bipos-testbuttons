@@ -11,17 +11,18 @@
 
 //	screen menu structure - each screen has its own
 struct regmenu_ screen_data = {
-						55,							//	main screen number, value 0-255, for custom windows it is better to take from 50 and above
-						1,							//	auxiliary screen number (usually 1)
-						0,							//	0
-						dispatch_screen,			//	pointer to the function handling touch, swipe, long press
-						key_press_screen, 			//	pointer to the function handling pressing the button
-						screen_job,					//	pointer to the callback function of the timer  
-						0,							//	0
-						show_screen,				//	pointer to the screen display function
-						0,							//	
-						0							//	long press of the button
+						55,							    //	curr_screen - main screen number, value 0-255, for custom windows it is better to take from 50 and above
+						1,							    //	swipe_scr - auxiliary screen number (usually 1)
+						0,							    //	overlay - 0
+						dispatch_screen,		//          - pointer to the handler of interaction (touch, swipe, long press)
+						key_press_screen, 	//	        - handler of short button press
+						refreshScreen,					//	        - timer callback function and..
+						0,							    //	            ..the variable passed to it
+						show_screen,				//	        - function writing to video buffer and..
+						0,							    //              ..the variable passed to it
+						0							      //	        - handler of long button press
 					};
+					
 int main(int param0, char** argv){	//	here the variable argv is not defined
 	show_screen((void*) param0);
 }
@@ -32,11 +33,12 @@ void testCallbackFunction(button_ button){
 	set_fg_color(getLongColour(button.text));
 
 	fill_screen_bg();
+
 	text_out_center(button.label, VIDEO_Y/2, VIDEO_X/2);
 
 	repaint_screen_lines(0, VIDEO_Y);
+	
 	set_update_period(1, 1000);			// request a refresh
-
 
 }
 
@@ -151,14 +153,14 @@ void key_press_screen(){
 	show_menu_animate(app_data->ret_f, (unsigned int)show_screen, ANIMATE_RIGHT);	
 };
 
-void screen_job(){		// periodic
+void refreshScreen(){		// periodic
 	// if necessary, you can use the screen data in this function
 	app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to pointer to screen data  
 	app_data_t *	app_data = *app_data_p;				//	pointer to screen data
 
 
 	refreshLayer(getCurrentLayer(app_data));
-	set_update_period(0, 0);		// refreshed
+	set_update_period(0, 1000);		// refreshed
 }
 
 int dispatch_screen (void *param){
