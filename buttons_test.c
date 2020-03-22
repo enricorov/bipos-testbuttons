@@ -85,8 +85,10 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	
 	// setup part, the first graphics are created here
 
+	setLayerBackground(getCurrentLayer(app_data), COLOR_SH_BLACK);
+
 	button_ placeholderButton;
-	createButton(	&placeholderButton, 			// initial button on the top left
+	initButton(	&placeholderButton, 			// initial button on the top left
 					4, 4,
 					82, 50,	
 					"HELLO",
@@ -95,8 +97,6 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 					COLOR_SH_YELLOW,
 					testCallbackFunction);
 
-	setLayerBackground(getCurrentLayer(app_data), COLOR_SH_BLACK);
-	
 	spawnButton(&placeholderButton, getCurrentLayer(app_data));
 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 4);	// top right
 	
@@ -134,15 +134,12 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 
 	spawnButton(&placeholderButton, getCurrentLayer(app_data));
 
+	refreshLayer(getCurrentLayer(app_data));						// redraw all the layer
 
-
-	refreshLayer(getCurrentLayer(app_data));
 }	
 
-caffeine();
+caffeine(STRONG);		// drains battery
 //set_update_period(1, 500);
-
-
 
 }
 
@@ -165,45 +162,45 @@ void screen_job(){		// periodic
 }
 
 int dispatch_screen (void *param){
-app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data 
-app_data_t *	app_data = *app_data_p;				//	pointer to screen data
+	app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data 
+	app_data_t *	app_data = *app_data_p;				//	pointer to screen data
 
-// in case of rendering the interface, update (transfer to video memory) the screen
+	// in case of rendering the interface, update (transfer to video memory) the screen
 
-struct gesture_ *gest = param;
-int result = 0;
+	struct gesture_ *gest = param;
+	int result = 0;
 
 
-switch (gest->gesture){
-	case GESTURE_CLICK: {			
+	switch (gest->gesture){
+		case GESTURE_CLICK: {			
 
-			processTap(getCurrentLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
+				processTap(getCurrentLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
 
-			break;
-		};
-		case GESTURE_SWIPE_RIGHT: {	//	swipe to the right
-			// usually this is the exit from the application
-			show_menu_animate(app_data->ret_f, (unsigned int)show_screen, ANIMATE_RIGHT);	
-			break;
-		};
-		case GESTURE_SWIPE_LEFT: {	// swipe to the left
-			// actions when swiping left	
-			break;
-		};
-		case GESTURE_SWIPE_UP: {	// swipe up
-			// actions when swiping up
-			break;
-		};
-		case GESTURE_SWIPE_DOWN: {	// swipe down
-			// actions when swiping down
-			break;
-		};		
-		default:{	// something went wrong ...
+				break;
+			};
+			case GESTURE_SWIPE_RIGHT: {	//	swipe to the right
+				// exit with swipe disabled
+				// show_menu_animate(app_data->ret_f, (unsigned int)show_screen, ANIMATE_RIGHT);	
+				break;
+			};
+			case GESTURE_SWIPE_LEFT: {	// swipe to the left
+				// actions when swiping left	
+				break;
+			};
+			case GESTURE_SWIPE_UP: {	// swipe up
+				// actions when swiping up
+				break;
+			};
+			case GESTURE_SWIPE_DOWN: {	// swipe down
+				// actions when swiping down
+				break;
+			};		
+			default:{	// something went wrong ...
+				
+				break;
+			};		
 			
-			break;
-		};		
-		
-	}
+		}
 	
 	return result;
 };

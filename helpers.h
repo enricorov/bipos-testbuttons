@@ -10,6 +10,15 @@
 #define MAX_NUM_BUTTONS 6
 #define MAX_SIZE_BUTTON_LABEL 10
 
+#define MAX_NUM_LAYERS 2
+
+typedef enum Caffeine_t {
+
+    WEAK,   // 0 - screen backlight will go off
+    STRONG  // 1 - backlight always on
+
+} Caffeine_t;
+
 typedef enum Way_ {
 
     UP,
@@ -33,16 +42,23 @@ typedef struct button_
             text;
 
     void (*callbackFunction)();
-
 } button_;
 
 typedef struct Layer_ {
 
     button_ buttonArray[MAX_NUM_BUTTONS];   // all buttons
     unsigned short index;                   // current valid button, init=0
-    short   backgroundColour;               // background for the current Layer
 
+    short   backgroundColour;               // background for the current Layer
+    
+    void (*callbackFunction)();
 } Layer_;
+
+typedef struct Window_ {
+
+    Layer_ layerArray[MAX_NUM_LAYERS];
+
+} Window_;
 
 typedef struct app_data_t {
 			void* 	ret_f;					//	the address of the return function
@@ -52,13 +68,13 @@ typedef struct app_data_t {
 void    spawnButton(button_ *button, Layer_ *layer);       // adds button to layer and draws it - note: graphics are shown only after calling refresh_screen_lines()
 void    drawButton(button_ *button);                       // draws a button only
 short   addButtonToLayer(button_ *button, Layer_ *layer); // adds button to layer
-void    createButton(  button_ *button,                    // initializing button with said parameters
+void    initButton(  button_ *button,                    // initializing button with said parameters
                     short a, short b, short c, short d, 
                     char* label, short border,
                     short filling, short text, void* callbackFunction);
 
 long    getLongColour(short colour);     // returns long from short versions
-void    caffeine(void);                  // display never turns off
+void    caffeine(Caffeine_t coffee);     // set display backlight
 void    setLayerBackground(Layer_ *layer, short colour);
 /* Layer_ *createLayer(void);
 short destroyLayer(Layer_ * layer); */
@@ -68,12 +84,14 @@ button_ moveInDirectionButton(button_ *button, Way_ dir, short offset);
 
 // DEFINITIONS ---------------------------------------------------
 
-void caffeine(void){
+void caffeine(Caffeine_t coffee){
 
+    // turn off timeout and exit
   set_display_state_value (8, 1);
-  set_display_state_value (4, 1);
   set_display_state_value (2, 1);
-
+  
+  if(coffee)    // backlight always on?
+    set_display_state_value (4, 1);
 }
 
 void processTap(Layer_ *layer, int x, int y) {
@@ -162,8 +180,9 @@ button_ moveInDirectionButton(button_ *button, Way_ dir, short separation){
 
     };
 
-    if (temp.a < 0)
-        temp.a = 0;
+        
+    if (temp.a < 0)     // display manager will freak out and hang when called with
+        temp.a = 0;     //       negative values, so this limits the max range
     
     if (temp.b < 0)
         temp.b = 0;
@@ -186,7 +205,7 @@ void spawnButton(button_ *button, Layer_ *layer){
     }
 }
 
-void createButton(button_ *button, short a, short b, short c, short d, char* label, short border,
+void initButton(button_ *button, short a, short b, short c, short d, char* label, short border,
                     short filling, short text, void* callbackFunction){     // populating the struct
 
                         button->a = a;
@@ -220,7 +239,7 @@ void drawButton(button_ *button){       // graphics of the button
     set_fg_color(getLongColour(button->text));
 
     text_out_center(    button->label,  // the text
-                        (int) (button->a + button->c) / 2,  // median
+                        (int) (button->a + button->c) * 2 / 3,  // median
                         (int) (button->b + button->d) / 2); 
 
 }
