@@ -9,7 +9,7 @@
 @for /D %%a in ("%PROGRAM_NAME:~0,-1%.txt") do @SET PROGRAM_NAME=%%~na
 	
 :: path to the compiler
-@SET BASE_PATH=d:\Dev\AmazfitBip_FW\soft\Patch\GNUArmEmbeddedGCC
+@SET BASE_PATH=C:\Program Files (x86)\GNU Tools Arm Embedded\9 2019-q4-major
 @SET LIBRARY_PATH="!BASE_PATH!\arm-none-eabi\lib\thumb\v7e-m+fp\hard"
 @SET LD_OPT=-lm -lc
 @SET GCC_OPT=-mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fno-math-errno 

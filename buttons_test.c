@@ -27,18 +27,47 @@ int main(int param0, char** argv){	//	here the variable argv is not defined
 	show_screen((void*) param0);
 }
 
-void testCallbackFunction(button_ button){
+void destroyThisLayer(Window_ *window) {
 
-	set_bg_color(getLongColour(button.filling));
-	set_fg_color(getLongColour(button.text));
-
-	fill_screen_bg();
-
-	text_out_center(button.label, VIDEO_Y/2, VIDEO_X/2);
-
-	repaint_screen_lines(0, VIDEO_Y);
+	window->index--;
+	set_update_period(1, 10);
 	
-	set_update_period(1, 1000);			// request a refresh
+}
+
+void testCallbackFunction(Window_ *window, button_ button){
+
+	button_ tempButton;
+	TextBox_ tempText;
+	char	tempBody[MAX_SIZE_TEXT_BOX];
+
+	_sprintf(tempBody, "Tap a button to edit\nthe parameters\nof button %s:", button.label);
+
+		// adding a layer to the "stack"
+	Layer_ *newLayer = &window->layerArray[window->index++];
+	setLayerBackground(newLayer, button.filling);
+
+	initButton(&tempButton,
+					16, 122,
+					94, 172,
+					"BUTTON\nCOLOR",
+					COLOR_SH_WHITE,
+					COLOR_SH_BLACK,
+					COLOR_SH_WHITE,
+					destroyThisLayer
+					);
+
+
+	addButtonToLayer(&tempButton, newLayer);
+
+	_strcpy(tempButton.label, "TEXT\nCOLOR");
+	moveInDirectionButton(&tempButton, RIGHT, 6);
+
+	addButtonToLayer(&tempButton, newLayer);
+	
+	initializeTextBox(&tempText, 4, 4, VIDEO_Y/2, VIDEO_X - 4, COLOR_SH_BLACK);
+	setLayerTextBox(getCurrentLayer(window), tempBody);
+
+	set_update_period(1, 10);
 
 }
 
@@ -87,56 +116,56 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	
 	// setup part, the first graphics are created here
 
-	setLayerBackground(getCurrentLayer(app_data), COLOR_SH_BLACK);
+	setLayerBackground(getTopLayer(app_data), COLOR_SH_BLACK);
 
 	button_ placeholderButton;
 	initButton(	&placeholderButton, 			// initial button on the top left
-					4, 4,
-					82, 50,	
+					16, 4,
+					94, 50,	
 					"HELLO",
 					COLOR_SH_WHITE,
 					COLOR_SH_BLUE,
 					COLOR_SH_YELLOW,
 					testCallbackFunction);
 
-	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+	spawnButton(&placeholderButton, getTopLayer(app_data));
 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 4);	// top right
 	
 	_strcpy(placeholderButton.label, "WORLD");
 	placeholderButton.filling = COLOR_SH_RED;
 	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+	spawnButton(&placeholderButton, getTopLayer(app_data));
 	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, 4);		// mid right
 	
 	_strcpy(placeholderButton.label, "ASDF");
 	placeholderButton.filling = COLOR_SH_AQUA;
 	placeholderButton.text = COLOR_SH_PURPLE;
 
-	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+	spawnButton(&placeholderButton, getTopLayer(app_data));
 	placeholderButton = moveInDirectionButton(&placeholderButton, LEFT, 4);		// mid left
 	
 	_strcpy(placeholderButton.label, "DONG");
 	placeholderButton.filling = COLOR_SH_GREEN;
 	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+	spawnButton(&placeholderButton, getTopLayer(app_data));
 	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, 4);		// low left
 	
 	_strcpy(placeholderButton.label, "FAM");
 	placeholderButton.filling = COLOR_SH_PURPLE;
 	placeholderButton.text = COLOR_SH_WHITE;
 
-	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+	spawnButton(&placeholderButton, getTopLayer(app_data));
 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 4);		// low right
 	
 	_strcpy(placeholderButton.label, "BURP");
 	placeholderButton.filling = COLOR_SH_YELLOW;
 	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+	spawnButton(&placeholderButton, getTopLayer(app_data));
 
-	refreshLayer(getCurrentLayer(app_data));						// redraw all the layer
+	refreshLayer(getTopLayer(app_data));						// redraw all the layer
 
 }	
 
@@ -158,7 +187,7 @@ void refreshScreen(){		// periodic
 	app_data_t *	app_data = *app_data_p;				//	pointer to screen data
 
 
-	refreshLayer(getCurrentLayer(app_data));
+	refreshLayer(getCurrentLayer(getCurrentWindow(app_data)));
 	set_update_period(0, 0);		// refreshed, turning off timer refresh
 }
 
@@ -175,7 +204,7 @@ int dispatch_screen (void *param){
 	switch (gest->gesture){
 		case GESTURE_CLICK: {			
 
-				processTap(getCurrentLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
+				processTap(getTopLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
 
 				break;
 			};

@@ -19,6 +19,7 @@ void 	show_screen (void *return_screen);
 void 	key_press_screen();
 int 	dispatch_screen (void *param);
 void 	refreshScreen();
-void	testCallbackFunction(button_ button);
+void	testCallbackFunction(Window_ *window, button_ button);
+void	destroyThisLayer(Window_ *window);
 
 #endif
