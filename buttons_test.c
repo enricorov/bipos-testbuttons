@@ -140,8 +140,7 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 
 }	
 
-caffeine(STRONG);		// drains battery
-//set_update_period(1, 500);
+caffeine(WEAK);
 
 }
 
@@ -160,7 +159,7 @@ void refreshScreen(){		// periodic
 
 
 	refreshLayer(getCurrentLayer(app_data));
-	set_update_period(0, 1000);		// refreshed
+	set_update_period(0, 0);		// refreshed, turning off timer refresh
 }
 
 int dispatch_screen (void *param){

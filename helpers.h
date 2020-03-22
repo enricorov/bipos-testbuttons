@@ -64,6 +64,7 @@ typedef struct Window_ {
 typedef struct app_data_t {
 			void* 	ret_f;					//	the address of the return function
 			Layer_	mainLayer;
+            Window_ mainWindow;
 } app_data_t;
 
 void    initButton(  button_ *button,                    // initializing button with said parameters
@@ -82,7 +83,9 @@ void    setLayerBackground(Layer_ *layer, short colour);
 short destroyLayer(Layer_ * layer); */
 Layer_ *getCurrentLayer(app_data_t *app_data);  // returns layer currently in use
 void    processTap(Layer_ *layer, int x, int y);                 // iterates over a layer for the button corresponding to a tap
-button_ moveInDirectionButton(button_ *button, Way_ dir, short offset);
+button_ moveInDirectionButton(button_ *button, Way_ dir, short offset); // given a button, it changes its parameters to move it.
+button_ mirrorInDirectionButton(button_ *button, Way_ dir);             // mirrors a button with respect to one of the four axes
+short   findHighestOpaqueLayer(Window_ *window);                           // returns the highest indexed layer with bg != COLOR_SH_MASK
 
 // DEFINITIONS ---------------------------------------------------
 
@@ -94,6 +97,17 @@ void caffeine(Caffeine_t coffee){
   
   if(coffee)    // backlight always on?
     set_display_state_value (4, 1);
+}
+
+short findHighestOpaqueLayer(Window_ *window) {
+
+    short highest = 0;
+    for (short i = 0; i < window->index; i++) {
+        if (window->layerArray[i].backgroundColour == COLOR_SH_MASK)
+            highest = i;
+    }
+
+    return highest;
 }
 
 void processTap(Layer_ *layer, int x, int y) {
@@ -109,9 +123,7 @@ void processTap(Layer_ *layer, int x, int y) {
             vibrate(1,50,0);    // vibrate if successful
             temp.callbackFunction(layer->buttonArray[i]);
         }
-
     }
-
 }
 
 /* Layer_ *createLayer(void){
@@ -143,13 +155,52 @@ Layer_ *getCurrentLayer(app_data_t *app_data){
     return &app_data->mainLayer;
 }
 
+button_ mirrorInDirectionButton(button_ *button, Way_ dir) {
+
+    button_ temp = *button;
+    
+    switch(dir){
+
+        case UP:
+            
+            temp.a = abssub(VIDEO_Y, temp.c);
+            temp.c = abssub(VIDEO_Y, temp.a);
+            break;
+        
+        case DOWN:
+
+            temp.a = VIDEO_Y - temp.c;
+            temp.c = VIDEO_Y - temp.a;
+            break;
+        
+        case LEFT:
+
+            temp.b = abssub(VIDEO_X, temp.d);
+            temp.d = abssub(VIDEO_X, temp.b);
+            break;
+        
+        case RIGHT:
+
+            temp.b = VIDEO_X - temp.d;
+            temp.d = VIDEO_X - temp.b;
+            break;
+
+        default:{
+            // touch wood
+        };
+
+    };
+
+    return temp;
+}
+
 button_ moveInDirectionButton(button_ *button, Way_ dir, short separation){
     
     button_ temp    = *button;
     short width     = (short) abssub(temp.a, temp.c);     // considering the case when (a,b) is the bottom right point and 
     short height    = (short) abssub(temp.b, temp.d);     //      not the top left
 
-    // a = x1, b = y1, c = y2, d = y2
+    // a = x1, b = y1, c = x2, d = y2
 
     switch(dir){
 
@@ -256,7 +307,7 @@ void drawButton(button_ *button){       // graphics of the button
     set_fg_color(getLongColour(button->text));
 
     text_out_center(    button->label,  // the text
-                        (int) (button->a + button->c) * 2 / 3,  // median
+                        (int) (button->a + button->c) / 2,  // median
                         (int) (button->b + button->d) / 2); 
 
 }
@@ -300,12 +351,6 @@ void setLayerBackground(Layer_ *layer, short colour){
 short getLayerBackground(Layer_ *layer) {
 
     return layer->backgroundColour;
-}
-
-void logthis(const char *message)    {
-
-    log_printf(5, message);
-    log_printf(5, "\r\n");
 }
 
 #endif
