@@ -64,7 +64,7 @@ void    setLayerBackground(Layer_ *layer, short colour);
 short destroyLayer(Layer_ * layer); */
 Layer_ *getCurrentLayer(app_data_t *app_data);  // returns layer currently in use
 void    processTap(Layer_ *layer, int x, int y);                 // iterates over a layer for the button corresponding to a tap
-button_ *cloneInDirectionButton(button_ *button, Way_ dir, short offset);
+button_ moveInDirectionButton(button_ *button, Way_ dir, short offset);
 
 // DEFINITIONS ---------------------------------------------------
 
@@ -122,16 +122,60 @@ Layer_ *getCurrentLayer(app_data_t *app_data){
     return &app_data->mainLayer;
 }
 
-button_ *cloneInDirectionButton(button_ *button, Way_ dir, short separation){
+button_ moveInDirectionButton(button_ *button, Way_ dir, short separation){
+    
+    button_ temp    = *button;
+    short width     = (short) abssub(temp.a, temp.c);     // considering the case when (a,b) is the bottom right point and 
+    short height    = (short) abssub(temp.b, temp.d);     //      not the top left
+
+    // a = x1, b = y1, c = y2, d = y2
 
     switch(dir){
 
         case UP:
 
-                
+            temp.b -= (height + separation);
+            temp.d -= (height + separation);
+            break;
+        
+        case DOWN:
+
+            temp.b += (height + separation);
+            temp.d += (height + separation);
+            break;
+        
+        case LEFT:
+
+            temp.a -= (width + separation);
+            temp.c -= (width + separation);
+            break;
+        
+        case RIGHT:
+
+            temp.a += (width + separation);
+            temp.c += (width + separation);
             break;
 
-    }
+        default:{
+            // touch wood
+        };
+
+    };
+
+    if (temp.a < 0)
+        temp.a = 0;
+    
+    if (temp.b < 0)
+        temp.b = 0;
+    
+    if (temp.c < 0) 
+        temp.c = 0;
+
+    if  (temp.d < 0)
+        temp.d = 0;
+    
+    return temp;
+    
 }
 
 void spawnButton(button_ *button, Layer_ *layer){
@@ -172,7 +216,7 @@ void drawButton(button_ *button){       // graphics of the button
                             button->c,
                             button->d);
 
-    load_font();
+    //load_font();
     set_fg_color(getLongColour(button->text));
 
     text_out_center(    button->label,  // the text

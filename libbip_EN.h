@@ -328,7 +328,7 @@ unsigned char get_var_left_side_menu_active(); 		                     //	variabl
 		void* get_ptr_screen_memory();                                   //	pointer to screen memory
 		void* get_ptr_free_list();										 // pointer to the tree of free memory blocks
 
-// Firmware functions
+// Graphics, refuses to draw figures with negative coordinates
 extern void 	reg_menu(void *regmenu_, int param);		                              //	registration of the created screen in the operating system
 extern	int		show_menu_animate(void* show_menu_function, int param, int animate);      //	displaying a menu with screen shift animation, param - parameter passed to the function show_menu_function
 extern 	int 	show_menu (void* show_menu_function, int param);                          //	display menu without animation, param - parameter passed to the function show_menu_function

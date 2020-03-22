@@ -85,10 +85,10 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	
 	// setup part, the first graphics are created here
 
-	button_ sampleButton;
-	createButton(	&sampleButton, 
+	button_ placeholderButton;
+	createButton(	&placeholderButton, 			// initial button on the top left
 					4, 4,
-					86, 50,
+					82, 50,	
 					"HELLO",
 					COLOR_SH_WHITE,
 					COLOR_SH_BLUE,
@@ -97,19 +97,44 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 
 	setLayerBackground(getCurrentLayer(app_data), COLOR_SH_BLACK);
 	
+	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 4);	// top right
+	
+	_strcpy(placeholderButton.label, "WORLD");
+	placeholderButton.filling = COLOR_SH_RED;
+	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&sampleButton, getCurrentLayer(app_data));
+	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, 4);		// mid right
+	
+	_strcpy(placeholderButton.label, "ASDF");
+	placeholderButton.filling = COLOR_SH_AQUA;
+	placeholderButton.text = COLOR_SH_PURPLE;
 
-	createButton(	&sampleButton, 
-					90, 4,
-					172, 50,
-					"WORLD",
-					COLOR_SH_WHITE,
-					COLOR_SH_RED,
-					COLOR_SH_GREEN,
-					testCallbackFunction);
+	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+	placeholderButton = moveInDirectionButton(&placeholderButton, LEFT, 4);		// mid left
+	
+	_strcpy(placeholderButton.label, "DONG");
+	placeholderButton.filling = COLOR_SH_GREEN;
+	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&sampleButton, getCurrentLayer(app_data));
+	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, 4);		// low left
+	
+	_strcpy(placeholderButton.label, "FAM");
+	placeholderButton.filling = COLOR_SH_PURPLE;
+	placeholderButton.text = COLOR_SH_WHITE;
+
+	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 4);		// low right
+	
+	_strcpy(placeholderButton.label, "BURP");
+	placeholderButton.filling = COLOR_SH_YELLOW;
+	placeholderButton.text = COLOR_SH_BLACK;
+
+	spawnButton(&placeholderButton, getCurrentLayer(app_data));
+
+
 
 	refreshLayer(getCurrentLayer(app_data));
 }	
