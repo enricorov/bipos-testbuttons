@@ -10,18 +10,14 @@
 #define MAX_NUM_BUTTONS 6
 #define MAX_SIZE_BUTTON_LABEL 10
 
-enum event_ble_ {
-    UNKNOWN,
-    PLAY,
-    PAUSE,
-    PLAYPAUSE,
-    NEXT,
-    PREVIOUS,
-    VOLUMEUP,
-    VOLUMEDOWN,
-    FORWARD,
-    REWIND
-};
+typedef enum Way_ {
+
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT
+
+} Way_;
 
 typedef struct button_
 {
@@ -36,7 +32,7 @@ typedef struct button_
             filling,
             text;
 
-    void (*callbackFunction)(void *);
+    void (*callbackFunction)();
 
 } button_;
 
@@ -53,21 +49,22 @@ typedef struct app_data_t {
 			Layer_	mainLayer;
 } app_data_t;
 
-void spawnButton(button_ *button, Layer_ *layer);       // adds button to layer and draws it - note: graphics are shown only after calling refresh_screen_lines()
-void drawButton(button_ *button);                       // draws a button only
-short addButtonToLayer(button_ *button, Layer_ *layer); // adds button to layer
-void createButton(  button_ *button,                    // initializing button with said parameters
+void    spawnButton(button_ *button, Layer_ *layer);       // adds button to layer and draws it - note: graphics are shown only after calling refresh_screen_lines()
+void    drawButton(button_ *button);                       // draws a button only
+short   addButtonToLayer(button_ *button, Layer_ *layer); // adds button to layer
+void    createButton(  button_ *button,                    // initializing button with said parameters
                     short a, short b, short c, short d, 
                     char* label, short border,
                     short filling, short text, void* callbackFunction);
 
-long getLongColour(short colour);     // returns long from short versions
-void caffeine(void);                  // display never turns off
-void setLayerBackground(Layer_ *layer, short colour);
+long    getLongColour(short colour);     // returns long from short versions
+void    caffeine(void);                  // display never turns off
+void    setLayerBackground(Layer_ *layer, short colour);
 /* Layer_ *createLayer(void);
 short destroyLayer(Layer_ * layer); */
 Layer_ *getCurrentLayer(app_data_t *app_data);  // returns layer currently in use
-void processTap(Layer_ *layer, int x, int y);                 // iterates over a layer for the button corresponding to a tap
+void    processTap(Layer_ *layer, int x, int y);                 // iterates over a layer for the button corresponding to a tap
+button_ *cloneInDirectionButton(button_ *button, Way_ dir, short offset);
 
 // DEFINITIONS ---------------------------------------------------
 
@@ -88,7 +85,7 @@ void processTap(Layer_ *layer, int x, int y) {
             // was the tap inside the button?
         if (temp.a < x && temp.c > x && temp.b < y && temp.d > y)
         {   
-            temp.callbackFunction(0);
+            temp.callbackFunction(layer->buttonArray[i]);
             vibrate(1,50,0);    // vibrate if successful
         }
 
@@ -116,12 +113,25 @@ void refreshLayer(Layer_ *layer){
         drawButton(&layer->buttonArray[i]);
     }
 
+    set_graph_callback_to_ram_1();
     repaint_screen_lines(0, VIDEO_Y);
 }
 
 Layer_ *getCurrentLayer(app_data_t *app_data){
 
     return &app_data->mainLayer;
+}
+
+button_ *cloneInDirectionButton(button_ *button, Way_ dir, short separation){
+
+    switch(dir){
+
+        case UP:
+
+                
+            break;
+
+    }
 }
 
 void spawnButton(button_ *button, Layer_ *layer){
@@ -162,15 +172,13 @@ void drawButton(button_ *button){       // graphics of the button
                             button->c,
                             button->d);
 
-    set_graph_callback_to_ram_1();      // moving the current drawings to the framebuffer?
-
     load_font();
     set_fg_color(getLongColour(button->text));
 
     text_out_center(    button->label,  // the text
                         (int) (button->a + button->c) / 2,  // median
                         (int) (button->b + button->d) / 2); 
-    repaint_screen_lines(0, 176);
+
 }
 
 long getLongColour(short colour) {

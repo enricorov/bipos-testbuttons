@@ -26,11 +26,17 @@ int main(int param0, char** argv){	//	here the variable argv is not defined
 	show_screen((void*) param0);
 }
 
-void testCallbackFunction(){
+void testCallbackFunction(button_ button){
 
-	set_bg_color(COLOR_RED);
+	set_bg_color(getLongColour(button.filling));
+	set_fg_color(getLongColour(button.text));
+
 	fill_screen_bg();
+	text_out_center(button.label, VIDEO_Y/2, VIDEO_X/2);
+
 	repaint_screen_lines(0, VIDEO_Y);
+	set_update_period(1, 1000);			// request a refresh
+
 
 }
 
@@ -81,12 +87,12 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 
 	button_ sampleButton;
 	createButton(	&sampleButton, 
-					50, 50,
-					80, 80,
-					"",
+					4, 4,
+					86, 50,
+					"HELLO",
 					COLOR_SH_WHITE,
-					COLOR_SH_PURPLE,
-					0,
+					COLOR_SH_BLUE,
+					COLOR_SH_YELLOW,
 					testCallbackFunction);
 
 	setLayerBackground(getCurrentLayer(app_data), COLOR_SH_BLACK);
@@ -95,16 +101,17 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	spawnButton(&sampleButton, getCurrentLayer(app_data));
 
 	createButton(	&sampleButton, 
-					100, 100,
-					120, 120,
-					"",
+					90, 4,
+					172, 50,
+					"WORLD",
 					COLOR_SH_WHITE,
-					COLOR_SH_PURPLE,
-					0,
-					0);
+					COLOR_SH_RED,
+					COLOR_SH_GREEN,
+					testCallbackFunction);
 
 	spawnButton(&sampleButton, getCurrentLayer(app_data));
 
+	refreshLayer(getCurrentLayer(app_data));
 }	
 
 caffeine();
@@ -129,7 +136,7 @@ void screen_job(){		// periodic
 
 
 	refreshLayer(getCurrentLayer(app_data));
-//	set_update_period(1, 500);
+	set_update_period(0, 0);		// refreshed
 }
 
 int dispatch_screen (void *param){
@@ -145,10 +152,10 @@ int result = 0;
 switch (gest->gesture){
 	case GESTURE_CLICK: {			
 
-				processTap(getCurrentLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
+			processTap(getCurrentLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
 
-				break;
-			};
+			break;
+		};
 		case GESTURE_SWIPE_RIGHT: {	//	swipe to the right
 			// usually this is the exit from the application
 			show_menu_animate(app_data->ret_f, (unsigned int)show_screen, ANIMATE_RIGHT);	
