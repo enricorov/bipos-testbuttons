@@ -42,7 +42,7 @@ void testCallbackFunction(Window_ *window, button_ button){
 
 	fill_screen_bg();
 
-	text_out_center(button.label, VIDEO_Y/2, VIDEO_X/2);
+	text_out_center(button.label, VIDEO_Y/2, VIDEO_X/2-10);
 
 	repaint_screen_lines(0, VIDEO_Y);
 	
@@ -51,20 +51,23 @@ void testCallbackFunction(Window_ *window, button_ button){
 }
 
 /* void testCallbackFunction(Window_ *window, button_ button){
-
+	
+	Layer_ tempLayer;
 	button_ tempButton;
 	TextBox_ tempText;
 	char	tempBody[MAX_SIZE_TEXT_BOX];
 
 	_sprintf(tempBody, "Tap a button to edit\nthe parameters\nof button %s:", button.label);
 
-		// adding a layer to the "stack"
-	Layer_ *newLayer = &window->layerArray[window->index++];
+	spawnLayer(&tempLayer, window);
+	
+	Layer_ *newLayer = &window->layerArray[window->index--];
+
 	setLayerBackground(newLayer, button.filling);
 
 	initButton(&tempButton,
 					16, 122,
-					94, 172,
+					90, 172,
 					"BUTTON\nCOLOR",
 					COLOR_SH_WHITE,
 					COLOR_SH_BLACK,
@@ -73,17 +76,17 @@ void testCallbackFunction(Window_ *window, button_ button){
 					);
 
 
-	addButtonToLayer(&tempButton, newLayer);
+	spawnButton(&tempButton, newLayer);
 
 	_strcpy(tempButton.label, "TEXT\nCOLOR");
-	moveInDirectionButton(&tempButton, RIGHT, 6);
+	tempButton = moveInDirectionButton(&tempButton, RIGHT, 6);
 
-	addButtonToLayer(&tempButton, newLayer);
+	spawnButton(&tempButton, newLayer);
 	
 	initializeTextBox(&tempText, 4, 4, VIDEO_Y/2, VIDEO_X - 4, COLOR_SH_BLACK);
 	setLayerTextBox(getCurrentLayer(window), tempBody);
 
-	repaint_screen();
+	refreshWindow(window);
 
 } */
 
@@ -129,60 +132,69 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	else					//	if not, to the watchface
 		app_data->ret_f = show_watchface;
 	
-	
+	// initialization variables
+
+	Point_ tempPoint = {84, 66};
+	Point_ otherTempPoint = UI_TOP_LEFT_POINT;
+		otherTempPoint.y += 12;		// down 12
+	Layer_ *tempLayer = createLayer();
+
+	if (tempLayer == NULL){
+		vibrate(2, 50, 50);
+	}
+
 	// setup part, the first graphics are created here
 
-	setLayerBackground(getTopLayer(app_data), COLOR_SH_BLACK);
+	setLayerBackground(tempLayer, COLOR_SH_BLACK);
 
 	button_ placeholderButton;
 	initButton(	&placeholderButton, 			// initial button on the top left
-					5, 16,
-					84, 66,	
+					otherTempPoint,
+					tempPoint,	
 					"HELLO",
 					COLOR_SH_WHITE,
 					COLOR_SH_BLUE,
 					COLOR_SH_YELLOW,
 					testCallbackFunction);
 
-	spawnButton(&placeholderButton, getTopLayer(app_data));
-	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 6);	// top right
+	spawnButton(&placeholderButton, tempLayer);
+/* 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 6);	// top right
 	
 	_strcpy(placeholderButton.label, "WORLD");
 	placeholderButton.filling = COLOR_SH_RED;
 	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&placeholderButton, getTopLayer(app_data));
+	spawnButton(&placeholderButton, tempLayer);
 	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, 4);		// mid right
 	
 	_strcpy(placeholderButton.label, "ASDF");
 	placeholderButton.filling = COLOR_SH_AQUA;
 	placeholderButton.text = COLOR_SH_PURPLE;
 
-	spawnButton(&placeholderButton, getTopLayer(app_data));
+	spawnButton(&placeholderButton, tempLayer);
 	placeholderButton = moveInDirectionButton(&placeholderButton, LEFT, 6);		// mid left
 	
 	_strcpy(placeholderButton.label, "DONG");
 	placeholderButton.filling = COLOR_SH_GREEN;
 	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&placeholderButton, getTopLayer(app_data));
+	spawnButton(&placeholderButton, tempLayer);
 	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, 4);		// low left
 	
 	_strcpy(placeholderButton.label, "FAM");
 	placeholderButton.filling = COLOR_SH_PURPLE;
 	placeholderButton.text = COLOR_SH_WHITE;
 
-	spawnButton(&placeholderButton, getTopLayer(app_data));
+	spawnButton(&placeholderButton, tempLayer);
 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 6);		// low right
 	
 	_strcpy(placeholderButton.label, "BURP");
 	placeholderButton.filling = COLOR_SH_YELLOW;
 	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&placeholderButton, getTopLayer(app_data));
+	spawnButton(&placeholderButton, tempLayer); */
 
-	refreshLayer(getTopLayer(app_data));						// redraw all the layer
-
+	repaint_screen_lines(0, VIDEO_Y);
 }	
 
 caffeine(WEAK);
@@ -203,7 +215,7 @@ void refreshScreen(){		// periodic
 	app_data_t *	app_data = *app_data_p;				//	pointer to screen data
 
 
-	refreshLayer(getCurrentLayer(getCurrentWindow(app_data)));
+	//refreshWindow(getCurrentWindow(app_data));
 	set_update_period(0, 0);		// refreshed, turning off timer refresh
 }
 

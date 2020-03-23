@@ -97,7 +97,12 @@ if exist name.txt del name.txt
 @call :echoColor 0B "Running ResPack..." 1
 %RESPACK_COMMAND%
 pause
-goto :EOF
+goto :cleanup
+
+:cleanup
+
+@call del foo, *.map *.o
+@goto :EOF
 
 :error
 @call :echoColor 4e ERROR! 1
