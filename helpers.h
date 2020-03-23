@@ -11,11 +11,11 @@
 #define MAX_SIZE_BUTTON_LABEL 20
 #define MAX_SIZE_TEXT_BOX 100
 
+
 #define MAX_NUM_LAYERS 2
 
-// UI
-
 #define DEFAULT_BORDER_THICKNESS 4      // distance of button edge to screen
+#define DEFAULT_TEXT_HEIGHT     25
 
 typedef struct Point_ {
 
@@ -80,6 +80,8 @@ typedef struct Layer_ {
     short   visible;                        // is the layer visible?
     TextBox_ textBox;               // textbox for general usage   
 
+    short state;                    //  usable to persist layer state after button presses
+
     void (*callbackFunction)();
 } Layer_;
 
@@ -115,12 +117,36 @@ const static Point_ UI_TOP_LEFT_POINT = {
     .y = DEFAULT_BORDER_THICKNESS
 };
 
+const static Point_ UI_TOP_RIGHT_POINT = {
+
+    .x = DEFAULT_BORDER_THICKNESS,
+    .y = VIDEO_X - DEFAULT_BORDER_THICKNESS
+};
+
 const static Point_ UI_BOTTOM_LEFT_POINT = {
 
     .x = DEFAULT_BORDER_THICKNESS,
     .y = VIDEO_X - DEFAULT_BORDER_THICKNESS
 };
 
+const static Point_ UI_BOTTOM_RIGHT_POINT = {
+
+    .x = VIDEO_Y - DEFAULT_BORDER_THICKNESS,
+    .y = VIDEO_X - DEFAULT_BORDER_THICKNESS
+};
+
+const static TextBox_ DEFAULT_TEXTBOX = {
+
+    .x1 = 0,
+    .y1 = 0,
+    .x2 = VIDEO_X,
+    .y2 = VIDEO_Y,
+
+    .body = "TEXTBOX SAMPLE",
+
+    .colour = COLOR_SH_PURPLE
+
+};
 // PROTOTYPES --------------------------
 
 void initButton(button_ *button, Point_ topLeft, Point_ bottomRight, // initialize button with these parameters
@@ -143,10 +169,9 @@ short   findHighestOpaqueLayer(Window_ *window);                           // re
 Window_ *getCurrentWindow(app_data_t *app_data);
 short   getCurrentLayerIndex(Window_ *window);
 void    initializeLayer(Layer_ *layer);        // setting layer params to default
-void    setLayerTextBox(Layer_ * layer, char *string);          // setting text box for a given layer
+void    setLayerTextBox(Layer_ *layer, TextBox_ tbox);          // setting text box for a given layer
 short   addLayerToWindow(Layer_ * layer, Window_ *window);            
 void    spawnLayer(Layer_ * layer, Window_ *window);   
-void    initializeTextBox(TextBox_ *textbox, short x1, short y1, short x2, short y2, short colour);
 void    refreshWindow(Window_ *window);
 void    drawTextBox(TextBox_ *textbox);
 void refreshLayer(Layer_ *layer, short repaint);
@@ -156,8 +181,14 @@ Viewport_ *createViewport(void);
 Viewport_ *getCurrentViewport(app_data_t *app_data);
 void    setViewportLayer(Viewport_ *vp, Layer_ *layer, Way_ dir);
 void    setActiveLayerViewport(Viewport_ *vp, Layer_ * layer);
+void    initTextBox(TextBox_ TextBox_);
 
 // DEFINITIONS ---------------------------------------------------
+
+void    initTextBox(TextBox_ tbox) {
+
+    tbox = DEFAULT_TEXTBOX;
+}
 
 Viewport_ *getCurrentViewport(app_data_t *app_data) {
 
@@ -233,7 +264,7 @@ void drawTextBox(TextBox_ *box){
 
     text_out_center(    box->body,  // the text
                         (int) (box->x1 + box->x2) / 2,  // median
-                        (int) box->y1);
+                        (int) box->y1 + 2);             // slightly down
 
 }
 
@@ -245,16 +276,6 @@ void refreshWindow(Window_ *window) {
     
     set_graph_callback_to_ram_1();
     repaint_screen_lines(0, VIDEO_Y);
-}
-
-void    initializeTextBox(TextBox_ *textbox, short x1, short y1, short x2, short y2, short colour){
-
-    textbox->x1 = x1;
-    textbox->x2 = x2;
-    textbox->y1 = y1;
-    textbox->y2 = y2;
-    textbox->colour=colour;
-
 }
 
 void spawnLayer(Layer_ *layer, Window_ *window){
@@ -280,9 +301,9 @@ short  addLayerToWindow(Layer_ *layer, Window_ *window) {
     }
 }
 
-void setLayerTextBox(Layer_ *layer, char *string){
+void setLayerTextBox(Layer_ *layer, TextBox_ tbox){
 
-    _strcpy(layer->textBox.body, string);
+    layer->textBox = tbox;
 
 };
 
@@ -328,7 +349,7 @@ void processTap(Layer_ *layer, int x, int y) {
         {   
             vibrate(1,50,0);    // vibrate if successful
             // set_close_timer(5); // paramose il culo
-            temp.callbackFunction(layer, temp);
+            temp.callbackFunction(layer, temp, i);
         }
     }
 }
@@ -339,8 +360,10 @@ Layer_ *createLayer(void){
 
     if(temp == NULL)
 		vibrate(2, 50, 50);
-    else
+    else{
         _memclr(temp, sizeof(Layer_));
+        temp->state = 0;
+    }
 
     return temp;
 }
@@ -362,6 +385,7 @@ void refreshLayer(Layer_ *layer, short repaint){
         drawButton(&layer->buttonArray[i]);
     }
 
+    
     drawTextBox(&layer->textBox);
     
     if(repaint)

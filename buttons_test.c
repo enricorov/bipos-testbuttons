@@ -27,15 +27,8 @@ int main(int param0, char** argv){	//	here the variable argv is not defined
 	show_screen((void*) param0);
 }
 
-void destroyThisLayer(Window_ *window) {
 
-	window->index--;
-	set_update_period(1, 10);
-	
-}
-
-
-void testCallbackFunction(Layer_ *layer, button_ button){
+void testCallbackFunction(Layer_ *layer, button_ button, short button_id){
 
 	set_bg_color(getLongColour(button.filling));
 	set_fg_color(getLongColour(button.text));
@@ -91,16 +84,34 @@ void testCallbackFunction(Layer_ *layer, button_ button){
 } */
 
 Layer_ *layerSplashConstructor(app_data_t *app_data){
-	Point_ tempPoint = {84, 66};
-	Point_ otherTempPoint = UI_TOP_LEFT_POINT;
-		otherTempPoint.y += 12;		// down 12
 
-	Layer_ *tempLayer = createLayer();
+	short width 	 = 84;								// handy parameters for easier button creation
+	short horizontalSeparation = 6;
+	short verticalSeparation = 6;
+	short height 	 = 46; 
+	
+	Point_ otherTempPoint = UI_TOP_LEFT_POINT;			// creating the two vertexes of the first box
+		otherTempPoint.y = DEFAULT_TEXT_HEIGHT;
+
+	Point_ tempPoint;
+
+	tempPoint.x = otherTempPoint.x + width;
+	tempPoint.y = otherTempPoint.y + height;
+
+	Layer_ *tempLayer = createLayer();					// allocating the space for the layer
 	setActiveLayerViewport(getCurrentViewport(app_data), tempLayer);
 
-	// setup part, the first graphics are created here
+	TextBox_ tempText;
+
+	initTextBox(tempText);
+
+	tempText.colour = COLOR_SH_WHITE;
+	_strcpy(tempText.body, "Welcome! Tap to begin.");
+	
 
 	setLayerBackground(tempLayer, COLOR_SH_BLACK);
+	
+	setLayerTextBox(getActiveLayer(app_data), tempText);
 
 	button_ placeholderButton;
 	initButton(	&placeholderButton, 			// initial button on the top left
@@ -113,35 +124,35 @@ Layer_ *layerSplashConstructor(app_data_t *app_data){
 					testCallbackFunction);
 
 	spawnButton(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 6);	// top right
+	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, horizontalSeparation);	// top right
 	
 	_strcpy(placeholderButton.label, "WORLD");
 	placeholderButton.filling = COLOR_SH_RED;
 	placeholderButton.text = COLOR_SH_BLACK;
 
 	spawnButton(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, 4);		// mid right
+	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, verticalSeparation);		// mid right
 	
 	_strcpy(placeholderButton.label, "ASDF");
 	placeholderButton.filling = COLOR_SH_AQUA;
 	placeholderButton.text = COLOR_SH_PURPLE;
 
 	spawnButton(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, LEFT, 6);		// mid left
+	placeholderButton = moveInDirectionButton(&placeholderButton, LEFT, horizontalSeparation);		// mid left
 	
 	_strcpy(placeholderButton.label, "DONG");
 	placeholderButton.filling = COLOR_SH_GREEN;
 	placeholderButton.text = COLOR_SH_BLACK;
 
 	spawnButton(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, 4);		// low left
+	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, verticalSeparation);		// low left
 	
 	_strcpy(placeholderButton.label, "FAM");
 	placeholderButton.filling = COLOR_SH_PURPLE;
 	placeholderButton.text = COLOR_SH_WHITE;
 
 	spawnButton(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 6);		// low right
+	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, horizontalSeparation);		// low right
 	
 	_strcpy(placeholderButton.label, "BURP");
 	placeholderButton.filling = COLOR_SH_YELLOW;
