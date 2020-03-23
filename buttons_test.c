@@ -137,8 +137,8 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	Point_ tempPoint = {84, 66};
 	Point_ otherTempPoint = UI_TOP_LEFT_POINT;
 		otherTempPoint.y += 12;		// down 12
-	Layer_ *tempLayer = getTopLayer(app_data);
-
+	Layer_ *tempLayer = createLayer();
+	
 	if (tempLayer == NULL){
 		vibrate(2, 50, 50);
 	}
