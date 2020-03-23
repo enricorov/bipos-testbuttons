@@ -174,7 +174,7 @@ short   addLayerToWindow(Layer_ * layer, Window_ *window);
 void    spawnLayer(Layer_ * layer, Window_ *window);   
 void    refreshWindow(Window_ *window);
 void    drawTextBox(TextBox_ *textbox);
-void refreshLayer(Layer_ *layer, short repaint);
+void    refreshLayer(Layer_ *layer, short repaint);
 void    initializeWindow(Window_ *window);
 void    initializeViewport(Viewport_ *wp);
 Viewport_ *createViewport(void);
@@ -182,6 +182,7 @@ Viewport_ *getCurrentViewport(app_data_t *app_data);
 void    setViewportLayer(Viewport_ *vp, Layer_ *layer, Way_ dir);
 void    setActiveLayerViewport(Viewport_ *vp, Layer_ * layer);
 void    initTextBox(TextBox_ TextBox_);
+void    destroyViewport(Viewport_ *vp);                         // destroy the viewport
 
 // DEFINITIONS ---------------------------------------------------
 
@@ -229,6 +230,12 @@ void    setViewportLayer(Viewport_ *vp, Layer_ *layer, Way_ dir) {
             // touch wood
         };
     }
+
+}
+
+void destroyViewport(Viewport_ *vp) {
+
+    vPortFree(vp);
 
 }
 

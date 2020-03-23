@@ -126,7 +126,7 @@ Layer_ *layerSplashConstructor(app_data_t *app_data){
 	set_fg_color(getLongColour(COLOR_SH_WHITE));
 	set_bg_color(getLongColour(COLOR_SH_BLACK));
 
-	text_out_center("Eat shit!", (int) VIDEO_Y/2, (int) 2);
+	text_out_center(tempLayer->textBox.body, (int) VIDEO_Y/2, (int) 2);
 
 	repaint_screen_lines(0, VIDEO_Y);
 	return tempLayer;
@@ -188,6 +188,8 @@ caffeine(WEAK);
 void key_press_screen(){
 	app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data 
 	app_data_t *	app_data = *app_data_p;				//	pointer to screen data
+
+	//destroyViewport(getCurrentViewport(app_data));
 
 	// call the return function (usually this is the start menu), specify the address of the function of our application as a parameter
 	show_menu_animate(app_data->ret_f, (unsigned int)show_screen, ANIMATE_RIGHT);	
