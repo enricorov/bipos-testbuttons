@@ -137,7 +137,7 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	Point_ tempPoint = {84, 66};
 	Point_ otherTempPoint = UI_TOP_LEFT_POINT;
 		otherTempPoint.y += 12;		// down 12
-	Layer_ *tempLayer = createLayer();
+	Layer_ *tempLayer = getTopLayer(app_data);
 
 	if (tempLayer == NULL){
 		vibrate(2, 50, 50);
@@ -158,7 +158,7 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 					testCallbackFunction);
 
 	spawnButton(&placeholderButton, tempLayer);
-/* 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 6);	// top right
+	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 6);	// top right
 	
 	_strcpy(placeholderButton.label, "WORLD");
 	placeholderButton.filling = COLOR_SH_RED;
@@ -192,9 +192,9 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	placeholderButton.filling = COLOR_SH_YELLOW;
 	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&placeholderButton, tempLayer); */
+	spawnButton(&placeholderButton, tempLayer);
 
-	repaint_screen_lines(0, VIDEO_Y);
+	refreshLayer(tempLayer, 1);
 }	
 
 caffeine(WEAK);
