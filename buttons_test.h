@@ -13,7 +13,6 @@
 #include "helpers.h"
 
 
-
 // template.c
 void 	show_screen (void *return_screen);
 void 	key_press_screen();

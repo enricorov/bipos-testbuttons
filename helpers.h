@@ -260,6 +260,7 @@ void initializeWindow(Window_ *window) {
 
 void drawTextBox(TextBox_ *box){
 
+    set_bg_color(getLongColour(COLOR_SH_MASK));
     set_fg_color(getLongColour(box->colour));
 
     text_out_center(    box->body,  // the text

@@ -43,49 +43,9 @@ void testCallbackFunction(Layer_ *layer, button_ button, short button_id){
 
 }
 
-/* void testCallbackFunction(Window_ *window, button_ button){
-	
-	Layer_ tempLayer;
-	button_ tempButton;
-	TextBox_ tempText;
-	char	tempBody[MAX_SIZE_TEXT_BOX];
-
-	_sprintf(tempBody, "Tap a button to edit\nthe parameters\nof button %s:", button.label);
-
-	spawnLayer(&tempLayer, window);
-	
-	Layer_ *newLayer = &window->layerArray[window->index--];
-
-	setLayerBackground(newLayer, button.filling);
-
-	initButton(&tempButton,
-					16, 122,
-					90, 172,
-					"BUTTON\nCOLOR",
-					COLOR_SH_WHITE,
-					COLOR_SH_BLACK,
-					COLOR_SH_WHITE,
-					destroyThisLayer
-					);
-
-
-	spawnButton(&tempButton, newLayer);
-
-	_strcpy(tempButton.label, "TEXT\nCOLOR");
-	tempButton = moveInDirectionButton(&tempButton, RIGHT, 6);
-
-	spawnButton(&tempButton, newLayer);
-	
-	initializeTextBox(&tempText, 4, 4, VIDEO_Y/2, VIDEO_X - 4, COLOR_SH_BLACK);
-	setLayerTextBox(getCurrentLayer(window), tempBody);
-
-	refreshWindow(window);
-
-} */
-
 Layer_ *layerSplashConstructor(app_data_t *app_data){
 
-	short width 	 = 84;								// handy parameters for easier button creation
+	short width 	 = 83;								// handy parameters for easier button creation
 	short horizontalSeparation = 6;
 	short verticalSeparation = 6;
 	short height 	 = 46; 
@@ -160,6 +120,15 @@ Layer_ *layerSplashConstructor(app_data_t *app_data){
 
 	spawnButton(&placeholderButton, tempLayer);
 
+	//set_graph_callback_to_ram_1();
+	load_font();
+
+	set_fg_color(getLongColour(COLOR_SH_WHITE));
+	set_bg_color(getLongColour(COLOR_SH_BLACK));
+
+	text_out_center("Eat shit!", (int) VIDEO_Y/2, (int) 2);
+
+	repaint_screen_lines(0, VIDEO_Y);
 	return tempLayer;
 }
 
@@ -209,7 +178,7 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 
 	Layer_ * layerSplash = layerSplashConstructor(app_data);
 
-	refreshLayer(layerSplash, 1);
+	//refreshLayer(layerSplash, 1);
 }	
 
 caffeine(WEAK);
