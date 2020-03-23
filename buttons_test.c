@@ -35,7 +35,7 @@ void destroyThisLayer(Window_ *window) {
 }
 
 
-void testCallbackFunction(Window_ *window, button_ button){
+void testCallbackFunction(Layer_ *layer, button_ button){
 
 	set_bg_color(getLongColour(button.filling));
 	set_fg_color(getLongColour(button.text));
@@ -90,58 +90,13 @@ void testCallbackFunction(Window_ *window, button_ button){
 
 } */
 
-void show_screen (void *param0){
-app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data
-app_data_t *	app_data;					//	pointer to screen data
-
-Elf_proc_* proc;
-
-// check the source at the procedure launch
-if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the overlay screen (incoming call, notification, alarm, target, etc.)
-
-	app_data = *app_data_p;					//	the data pointer must be saved for the deletion 
-											//	release memory function reg_menu
-	*app_data_p = NULL;						//	reset the pointer to pass it to the function reg_menu		
-
-	// 	create a new screen when the pointer temp_buf_2 is equal to 0 and the memory is not released		
-	reg_menu(&screen_data, 0); 				// 	menu_overlay=0
-	
-	*app_data_p = app_data;						//	restore the data pointer after the reg_menu function
-	
-	//   here we perform actions when returning from the overlay screen: restore data, etc.
-	
-	
-} else { // if the function is started for the first time i.e. from the menu 
-
-	// create a screen (register in the system) 
-	reg_menu(&screen_data, 0);
-
-	// allocate the necessary memory and place the data in it (the memory by the pointer stored at temp_buf_2 is released automatically by the function reg_menu of another screen)
-	*app_data_p = (app_data_t *)pvPortMalloc(sizeof(app_data_t));
-	app_data = *app_data_p;		//	data pointer
-	
-	// clear the memory for data
-	_memclr(app_data, sizeof(app_data_t));
-	
-	//	param0 value contains a pointer to the data of the running process structure Elf_proc_
-	proc = param0;
-	
-	// remember the address of the pointer to the function you need to return to after finishing this screen
-	if ( param0 && proc->ret_f ) 			//	if the return pointer is passed, then return to it
-		app_data->ret_f = proc->elf_finish;
-	else					//	if not, to the watchface
-		app_data->ret_f = show_watchface;
-	
-	// initialization variables
-
+Layer_ *layerSplashConstructor(app_data_t *app_data){
 	Point_ tempPoint = {84, 66};
 	Point_ otherTempPoint = UI_TOP_LEFT_POINT;
 		otherTempPoint.y += 12;		// down 12
+
 	Layer_ *tempLayer = createLayer();
-	
-	if (tempLayer == NULL){
-		vibrate(2, 50, 50);
-	}
+	setActiveLayerViewport(getCurrentViewport(app_data), tempLayer);
 
 	// setup part, the first graphics are created here
 
@@ -194,7 +149,56 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 
 	spawnButton(&placeholderButton, tempLayer);
 
-	refreshLayer(tempLayer, 1);
+	return tempLayer;
+}
+
+void show_screen (void *param0){
+app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data
+app_data_t *	app_data;					//	pointer to screen data
+
+Elf_proc_* proc;
+
+// check the source at the procedure launch
+if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the overlay screen (incoming call, notification, alarm, target, etc.)
+
+	app_data = *app_data_p;					//	the data pointer must be saved for the deletion 
+											//	release memory function reg_menu
+	*app_data_p = NULL;						//	reset the pointer to pass it to the function reg_menu		
+
+	// 	create a new screen when the pointer temp_buf_2 is equal to 0 and the memory is not released		
+	reg_menu(&screen_data, 0); 				// 	menu_overlay=0
+	
+	*app_data_p = app_data;						//	restore the data pointer after the reg_menu function
+	
+	//   here we perform actions when returning from the overlay screen: restore data, etc.
+	
+	
+} else { // if the function is started for the first time i.e. from the menu 
+
+	// create a screen (register in the system) 
+	reg_menu(&screen_data, 0);
+
+	// allocate the necessary memory and place the data in it (the memory by the pointer stored at temp_buf_2 is released automatically by the function reg_menu of another screen)
+	*app_data_p = (app_data_t *)pvPortMalloc(sizeof(app_data_t));
+	app_data = *app_data_p;		//	data pointer
+	
+	// clear the memory for data
+	_memclr(app_data, sizeof(app_data_t));
+	
+	//	param0 value contains a pointer to the data of the running process structure Elf_proc_
+	proc = param0;
+	
+	// remember the address of the pointer to the function you need to return to after finishing this screen
+	if ( param0 && proc->ret_f ) 			//	if the return pointer is passed, then return to it
+		app_data->ret_f = proc->elf_finish;
+	else					//	if not, to the watchface
+		app_data->ret_f = show_watchface;
+	
+	// initialization variables
+
+	Layer_ * layerSplash = layerSplashConstructor(app_data);
+
+	refreshLayer(layerSplash, 1);
 }	
 
 caffeine(WEAK);
@@ -215,7 +219,7 @@ void refreshScreen(){		// periodic
 	app_data_t *	app_data = *app_data_p;				//	pointer to screen data
 
 
-	//refreshWindow(getCurrentWindow(app_data));
+	refreshLayer(getActiveLayer(app_data), 1);
 	set_update_period(0, 0);		// refreshed, turning off timer refresh
 }
 
@@ -234,12 +238,12 @@ int dispatch_screen (void *param){
 	switch (gest->gesture){
 		case GESTURE_CLICK: {			
 
-				processTap(getCurrentWindow(app_data), gest->touch_pos_x, gest->touch_pos_y);
-
+				processTap(getActiveLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
+				
 				break;
 			};
 			case GESTURE_SWIPE_RIGHT: {	//	swipe to the right
-				// exit with swipe disabled
+				// moveToLayer()
 				// show_menu_animate(app_data->ret_f, (unsigned int)show_screen, ANIMATE_RIGHT);	
 				break;
 			};

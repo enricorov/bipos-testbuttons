@@ -330,7 +330,8 @@ unsigned char get_var_left_side_menu_active(); 		                     //	variabl
 
 // Graphics, never draw figures with negative coordinates
 extern void 	reg_menu(void *regmenu_, int param);		                              //	registration of the created screen in the operating system
-extern	int		show_menu_animate(void* show_menu_function, int param, int animate);      //	displaying a menu with screen shift animation, param - parameter passed to the function show_menu_function
+extern	int		show_menu_animate(void* show_menu_function, int param, int animate);      //	displaying a window with screen animation, params: (return pointer, function terminating, animation)
+                                                                                          //    usage example: show_menu_animate(app_data->ret_f, (unsigned int) show_screen(), ANIMATE_RIGHT)
 extern 	int 	show_menu (void* show_menu_function, int param);                          //	display menu without animation, param - parameter passed to the function show_menu_function
 extern  int		text_width(const char *text);                                             //	returns the width of the text that will be displayed in the current font
 extern void 	text_out(char *text, int pos_x, int pos_y);                               //	text output by coordinates, pos_x, pos_y coordinates of the upper left corner of the inscription
@@ -371,7 +372,7 @@ extern	int		_memcmp	(const void* p1, const void* p2, int size);                 
 extern 	int		get_tick_count();														  //	returns the number of ticks of the system timer from the moment of reboot (approximately 510 ticks per second)
 extern 	int		set_update_period (int cmd, int period); 								  //    start the timer of the current screen. callback timer screen_job_func; cmd=0 stop timer, cmd=1 timer plat for the number of ms equal period 
 extern	int 	set_display_state_value(int state_1, int state);						  //	setting screen options
-extern	int 	set_close_timer(int delay_s);											  //	
+extern	int 	set_close_timer(int delay_s);											  //	unclear, possibly setting backlight turnoff time. Don't use it.
 
 extern 	int 	log_printf(int debug_level, const char *format, ...); 					  //	write to device log, debug_level=5
 extern	int 	vibrate(int count, int on_ms, int off_ms);								  //	vibration (background)

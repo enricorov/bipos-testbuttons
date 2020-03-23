@@ -83,6 +83,16 @@ typedef struct Layer_ {
     void (*callbackFunction)();
 } Layer_;
 
+typedef struct Viewport_ {
+
+    
+    Layer_ *    active,                     // layer currently drawn
+                up,                         // pointers to layers on all sides
+                down,
+                left,
+                right;
+} Viewport_;
+
 typedef struct Window_ {
 
     Layer_ layerArray[MAX_NUM_LAYERS];
@@ -92,8 +102,9 @@ typedef struct Window_ {
 
 typedef struct app_data_t {
 			void* 	ret_f;					//	the address of the return function
-			Layer_	mainLayer;
-            Window_ mainWindow;
+			//Layer_	mainLayer;
+            Viewport_ vp;
+            //Window_ mainWindow;
 } app_data_t;
 
 // CONSTANTS ----------------------
@@ -123,9 +134,9 @@ void    caffeine(Caffeine_t coffee);     // set display backlight
 void    setLayerBackground(Layer_ *layer, short colour);
 Layer_ *createLayer(void);
 void destroyLayer(Layer_ * layer); 
-Layer_ *getCurrentLayer(Window_ * window);  // returns layer currently in use
+Layer_ *getActiveLayer(app_data_t *app_data);  // returns layer currently in use
 Layer_ *getTopLayer(app_data_t *app_data);  // returns topmost layer
-void processTap(Window_ *window, int x, int y);                 // iterates over a layer for the button corresponding to a tap
+void processTap(Layer_ *layer, int x, int y);                 // iterates over a layer for the button corresponding to a tap
 button_ moveInDirectionButton(button_ *button, Way_ dir, short offset); // given a button, it changes its parameters to move it.
 button_ mirrorInDirectionButton(button_ *button, Way_ dir);             // mirrors a button with respect to one of the four axes
 short   findHighestOpaqueLayer(Window_ *window);                           // returns the highest indexed layer with bg != COLOR_SH_MASK
@@ -140,8 +151,76 @@ void    refreshWindow(Window_ *window);
 void    drawTextBox(TextBox_ *textbox);
 void refreshLayer(Layer_ *layer, short repaint);
 void    initializeWindow(Window_ *window);
+void    initializeViewport(Viewport_ *wp);
+Viewport_ *createViewport(void);
+Viewport_ *getCurrentViewport(app_data_t *app_data);
+void    setViewportLayer(Viewport_ *vp, Layer_ *layer, Way_ dir);
+void    setActiveLayerViewport(Viewport_ *vp, Layer_ * layer);
 
 // DEFINITIONS ---------------------------------------------------
+
+Viewport_ *getCurrentViewport(app_data_t *app_data) {
+
+    return &app_data->vp;
+}
+
+void    setActiveLayerViewport(Viewport_ *vp, Layer_ *layer) {
+
+    vp->active = layer;
+
+}
+
+void    setViewportLayer(Viewport_ *vp, Layer_ *layer, Way_ dir) {
+    
+    switch(dir){
+
+        case UP:
+            
+            vp->up = *layer;
+            break;
+        
+        case DOWN:
+
+            vp->down = *layer;
+            break;
+        
+        case LEFT:
+
+            vp->left = *layer;
+            break;
+        
+        case RIGHT:
+
+            vp->right = *layer;
+            break;
+
+        default:{
+            // touch wood
+        };
+    }
+
+}
+
+Viewport_ *createViewport(void) {
+
+    Viewport_ *temp = (Viewport_ *)pvPortMalloc(sizeof(Viewport_));
+
+    if(temp == NULL)
+		vibrate(2, 50, 50);
+    else {
+        _memclr(temp, sizeof(Viewport_));
+        initializeLayer(temp->active);
+    }
+
+    return temp;
+
+}
+
+void initializeViewport(Viewport_ *vp) {
+
+    initializeLayer(vp->active);
+
+}
 
 void initializeWindow(Window_ *window) {
 
@@ -219,10 +298,10 @@ short getCurrentLayerIndex(Window_ *window){
     return window->index;
 }
 
-Window_ *getCurrentWindow(app_data_t *app_data) {
+/* Window_ *getCurrentWindow(app_data_t *app_data) {
 
     return(&app_data->mainWindow);
-}
+} */
 
 short findHighestOpaqueLayer(Window_ *window) {
 
@@ -235,11 +314,11 @@ short findHighestOpaqueLayer(Window_ *window) {
     return highest;
 }
 
-void processTap(Window_ *window, int x, int y) {
+void processTap(Layer_ *layer, int x, int y) {
 
     short i;
     button_ temp;
-    Layer_ *layer = &window->layerArray[window->index];
+    //Layer_ *layer = &window->layerArray[window->index];
     
     for(i = 0; i < layer->index; i++){
         temp = layer->buttonArray[i];
@@ -248,14 +327,22 @@ void processTap(Window_ *window, int x, int y) {
                 && temp.topLeft.y < y && temp.bottomRight.y > y)
         {   
             vibrate(1,50,0);    // vibrate if successful
-            temp.callbackFunction(window, temp);
+            // set_close_timer(5); // paramose il culo
+            temp.callbackFunction(layer, temp);
         }
     }
 }
 
 Layer_ *createLayer(void){
 
-    return (Layer_ *)pvPortMalloc(sizeof(Layer_));
+    Layer_ *temp = (Layer_ *)pvPortMalloc(sizeof(Layer_));
+
+    if(temp == NULL)
+		vibrate(2, 50, 50);
+    else
+        _memclr(temp, sizeof(Layer_));
+
+    return temp;
 }
 
 void destroyLayer(Layer_ *layer) {
@@ -267,7 +354,7 @@ void refreshLayer(Layer_ *layer, short repaint){
 
     set_bg_color(layer->backgroundColour);
     fill_screen_bg();
-    set_graph_callback_to_ram_1();
+//    set_graph_callback_to_ram_1();
     
     short i;
     for(i = 0; i < layer->index; i++){
@@ -281,18 +368,18 @@ void refreshLayer(Layer_ *layer, short repaint){
         repaint_screen_lines(0, VIDEO_Y);
 }
 
-Layer_ *getTopLayer(app_data_t *app_data){
+/* Layer_ *getTopLayer(app_data_t *app_data){
 
     short top = app_data->mainWindow.index;
 
     top++;
 
     return &app_data->mainWindow.layerArray[top];
-}
+} */
 
-Layer_ *getCurrentLayer(Window_ *window){
+Layer_ *getActiveLayer(app_data_t *app_data){
 
-    return &window->layerArray[window->index];
+    return app_data->vp.active;
 }
 
 button_ mirrorInDirectionButton(button_ *button, Way_ dir) {

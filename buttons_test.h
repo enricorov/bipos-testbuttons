@@ -19,7 +19,8 @@ void 	show_screen (void *return_screen);
 void 	key_press_screen();
 int 	dispatch_screen (void *param);
 void 	refreshScreen();
-void	testCallbackFunction(Window_ *window, button_ button);
+void	testCallbackFunction(Layer_ *layer, button_ button);
 void	destroyThisLayer(Window_ *window);
+Layer_ *layerSplashConstructor(app_data_t *app_data);
 
 #endif
