@@ -98,7 +98,7 @@ void    setLayerBackground(Layer_ *layer, short colour);
 short destroyLayer(Layer_ * layer); */
 Layer_ *getCurrentLayer(Window_ * window);  // returns layer currently in use
 Layer_ *getTopLayer(app_data_t *app_data);  // returns topmost layer
-void    processTap(Layer_ *layer, int x, int y);                 // iterates over a layer for the button corresponding to a tap
+void processTap(Window_ *window, int x, int y);                 // iterates over a layer for the button corresponding to a tap
 button_ moveInDirectionButton(button_ *button, Way_ dir, short offset); // given a button, it changes its parameters to move it.
 button_ mirrorInDirectionButton(button_ *button, Way_ dir);             // mirrors a button with respect to one of the four axes
 short   findHighestOpaqueLayer(Window_ *window);                           // returns the highest indexed layer with bg != COLOR_SH_MASK
@@ -201,10 +201,11 @@ short findHighestOpaqueLayer(Window_ *window) {
     return highest;
 }
 
-void processTap(Layer_ *layer, int x, int y) {
+void processTap(Window_ *window, int x, int y) {
 
     short i;
     button_ temp;
+    Layer_ *layer = &window->layerArray[window->index];
     
     for(i = 0; i < layer->index; i++){
         temp = layer->buttonArray[i];
@@ -212,7 +213,7 @@ void processTap(Layer_ *layer, int x, int y) {
         if (temp.a < x && temp.c > x && temp.b < y && temp.d > y)
         {   
             vibrate(1,50,0);    // vibrate if successful
-            temp.callbackFunction(layer->buttonArray[i]);
+            temp.callbackFunction(window, temp);
         }
     }
 }

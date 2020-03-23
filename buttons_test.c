@@ -34,7 +34,23 @@ void destroyThisLayer(Window_ *window) {
 	
 }
 
+
 void testCallbackFunction(Window_ *window, button_ button){
+
+	set_bg_color(getLongColour(button.filling));
+	set_fg_color(getLongColour(button.text));
+
+	fill_screen_bg();
+
+	text_out_center(button.label, VIDEO_Y/2, VIDEO_X/2);
+
+	repaint_screen_lines(0, VIDEO_Y);
+	
+	set_update_period(1, 1000);			// request a refresh
+
+}
+
+/* void testCallbackFunction(Window_ *window, button_ button){
 
 	button_ tempButton;
 	TextBox_ tempText;
@@ -67,9 +83,9 @@ void testCallbackFunction(Window_ *window, button_ button){
 	initializeTextBox(&tempText, 4, 4, VIDEO_Y/2, VIDEO_X - 4, COLOR_SH_BLACK);
 	setLayerTextBox(getCurrentLayer(window), tempBody);
 
-	set_update_period(1, 10);
+	repaint_screen();
 
-}
+} */
 
 void show_screen (void *param0){
 app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data
@@ -120,8 +136,8 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 
 	button_ placeholderButton;
 	initButton(	&placeholderButton, 			// initial button on the top left
-					16, 4,
-					94, 50,	
+					5, 16,
+					84, 66,	
 					"HELLO",
 					COLOR_SH_WHITE,
 					COLOR_SH_BLUE,
@@ -129,7 +145,7 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 					testCallbackFunction);
 
 	spawnButton(&placeholderButton, getTopLayer(app_data));
-	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 4);	// top right
+	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 6);	// top right
 	
 	_strcpy(placeholderButton.label, "WORLD");
 	placeholderButton.filling = COLOR_SH_RED;
@@ -143,7 +159,7 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	placeholderButton.text = COLOR_SH_PURPLE;
 
 	spawnButton(&placeholderButton, getTopLayer(app_data));
-	placeholderButton = moveInDirectionButton(&placeholderButton, LEFT, 4);		// mid left
+	placeholderButton = moveInDirectionButton(&placeholderButton, LEFT, 6);		// mid left
 	
 	_strcpy(placeholderButton.label, "DONG");
 	placeholderButton.filling = COLOR_SH_GREEN;
@@ -157,7 +173,7 @@ if ( (param0 == *app_data_p) && get_var_menu_overlay()){ // return from the over
 	placeholderButton.text = COLOR_SH_WHITE;
 
 	spawnButton(&placeholderButton, getTopLayer(app_data));
-	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 4);		// low right
+	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, 6);		// low right
 	
 	_strcpy(placeholderButton.label, "BURP");
 	placeholderButton.filling = COLOR_SH_YELLOW;
@@ -195,6 +211,8 @@ int dispatch_screen (void *param){
 	app_data_t** 	app_data_p = get_ptr_temp_buf_2(); 	//	pointer to a pointer to screen data 
 	app_data_t *	app_data = *app_data_p;				//	pointer to screen data
 
+	//Window_ *window = getCurrentWindow(app_data);
+
 	// in case of rendering the interface, update (transfer to video memory) the screen
 
 	struct gesture_ *gest = param;
@@ -204,7 +222,7 @@ int dispatch_screen (void *param){
 	switch (gest->gesture){
 		case GESTURE_CLICK: {			
 
-				processTap(getTopLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
+				processTap(getCurrentWindow(app_data), gest->touch_pos_x, gest->touch_pos_y);
 
 				break;
 			};
