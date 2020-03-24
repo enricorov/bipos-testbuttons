@@ -33,7 +33,7 @@ v.1.1 - 10/10/2019
 v.1.0
 -   first version of the library
 
-*****/
+****/
 
 
 #ifndef __LIBBIP_H__

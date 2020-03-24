@@ -60,14 +60,13 @@ typedef struct button_
 
 typedef struct TextBox_ {
 
-    unsigned short  x1,      // x1   upper left
-                    y1,      // y1
-                    x2,      // x2   lower right
-                    y2;      // y2
+    Point_  topLeft,
+            bottomRight;
 
     char    body[MAX_SIZE_TEXT_BOX];
 
-    short   colour;
+    short   colour, 
+            background;
 
 } TextBox_;
 
@@ -137,10 +136,8 @@ const static Point_ UI_BOTTOM_RIGHT_POINT = {
 
 const static TextBox_ DEFAULT_TEXTBOX = {
 
-    .x1 = 0,
-    .y1 = 0,
-    .x2 = VIDEO_X,
-    .y2 = VIDEO_Y,
+    .topLeft = {10, 10},
+    .bottomRight = {VIDEO_Y - 10, VIDEO_X - 10},
 
     .body = "TEXTBOX SAMPLE",
 
@@ -181,15 +178,10 @@ Viewport_ *createViewport(void);
 Viewport_ *getCurrentViewport(app_data_t *app_data);
 void    setViewportLayer(Viewport_ *vp, Layer_ *layer, Way_ dir);
 void    setActiveLayerViewport(Viewport_ *vp, Layer_ * layer);
-void    initTextBox(TextBox_ TextBox_);
 void    destroyViewport(Viewport_ *vp);                         // destroy the viewport
 
 // DEFINITIONS ---------------------------------------------------
 
-void    initTextBox(TextBox_ tbox) {
-
-    tbox = DEFAULT_TEXTBOX;
-}
 
 Viewport_ *getCurrentViewport(app_data_t *app_data) {
 
@@ -267,12 +259,12 @@ void initializeWindow(Window_ *window) {
 
 void drawTextBox(TextBox_ *box){
 
-    set_bg_color(getLongColour(COLOR_SH_MASK));
+    set_bg_color(getLongColour(box->background));
     set_fg_color(getLongColour(box->colour));
 
     text_out_center(    box->body,  // the text
-                        (int) (box->x1 + box->x2) / 2,  // median
-                        (int) box->y1 + 2);             // slightly down
+                        (int) (box->topLeft.x + box->bottomRight.x) / 2,  // median
+                        (int) box->topLeft.y + 2);             // slightly down
 
 }
 
