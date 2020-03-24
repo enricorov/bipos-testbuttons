@@ -28,10 +28,9 @@ int main(int param0, char **argv)
 	show_screen((void *)param0);
 }
 
-
 // CALLBACK FUNCTIONS - functions associated to objects i.e. buttons or layers
 
-void testCallbackFunction(Layer_ *layer, button_ button, short button_id)
+void simpleInteractionCallbackFunction(Layer_ *layer, button_ button, short button_id)
 {
 
 	set_bg_color(getLongColour(button.filling));
@@ -39,19 +38,34 @@ void testCallbackFunction(Layer_ *layer, button_ button, short button_id)
 
 	fill_screen_bg();
 
-	text_out_center(button.label, VIDEO_Y / 2, VIDEO_X / 2 - 10);
+	//text_out_center(button.label, VIDEO_Y / 2, VIDEO_X / 2 - 10);		// print label to center of screen
+
+	TextBox_ tempText = DEFAULT_TEXTBOX;
+	
+	char str[MAX_SIZE_TEXT_BOX];
+
+	switch (button_id)
+	{
+
+	case 0:
+		_sprintf(&str, "This is the callback function called from button %d. I am testing this", button_id);
+		_strcpy(tempText.body, str);
+		break;
+	}
+
+	drawTextBox(&tempText);
 
 	repaint_screen_lines(0, VIDEO_Y);
+	//setActiveOverlayValue(layer);
 
 	set_update_period(1, 1000); // request a refresh
 }
 
-
-void splashCallbackFunction(Viewport_ *vp){
+void splashCallbackFunction(Viewport_ *vp)
+{
 
 	vp->active = vp->right;
 	refreshLayer(vp->active, 1);
-
 }
 
 // CONSTRUCTORS - here layers are allocated, initialized and the pointer to them is returned
@@ -59,7 +73,7 @@ void splashCallbackFunction(Viewport_ *vp){
 Layer_ *layerSplashConstructor(app_data_t *app_data)
 {
 
-	Layer_ *tempLayer = createLayer();								 // allocating the space for the layer
+	Layer_ *tempLayer = createLayer(); // allocating the space for the layer
 
 	setLayerBackground(tempLayer, COLOR_SH_PURPLE);
 
@@ -75,20 +89,18 @@ Layer_ *layerSplashConstructor(app_data_t *app_data)
 
 	setLayerTextBox(tempLayer, tempText);
 
-	button_ placeholderButton = {			// invisible button to move to next layer on tap
-			   BIPUI_TOP_LEFT_POINT,
-			   BIPUI_BOTTOM_RIGHT_POINT,
-			   "",
-			   COLOR_SH_BLACK,
-			   COLOR_SH_BLACK,
-			   COLOR_SH_WHITE,
-			   splashCallbackFunction
-	};
+	button_ placeholderButton = {// invisible button to move to next layer on tap
+								 BIPUI_TOP_LEFT_POINT,
+								 BIPUI_BOTTOM_RIGHT_POINT,
+								 "",
+								 COLOR_SH_BLACK,
+								 COLOR_SH_BLACK,
+								 COLOR_SH_WHITE,
+								 splashCallbackFunction};
 
 	addButtonToLayer(&placeholderButton, tempLayer);
 
 	return tempLayer;
-
 }
 
 Layer_ *layerButtonsConstructor(app_data_t *app_data)
@@ -105,9 +117,9 @@ Layer_ *layerButtonsConstructor(app_data_t *app_data)
 	tempPointOne.y -= height;
 	tempPointTwo.x += width;
 
-	Layer_ *tempLayer = createLayer();								 // allocating the space for the layer
+	Layer_ *tempLayer = createLayer(); // allocating the space for the layer
 	//setActiveLayerViewport(getCurrentViewport(app_data), tempLayer); // assigning this layer
-																	 // to the active slot of this viewport
+	// to the active slot of this viewport
 
 	setLayerBackground(tempLayer, COLOR_SH_BLACK);
 
@@ -131,7 +143,7 @@ Layer_ *layerButtonsConstructor(app_data_t *app_data)
 			   COLOR_SH_WHITE,
 			   COLOR_SH_BLUE,
 			   COLOR_SH_YELLOW,
-			   testCallbackFunction);
+			   simpleInteractionCallbackFunction);
 
 	addButtonToLayer(&placeholderButton, tempLayer);
 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, horizontalSeparation); // top right
@@ -173,7 +185,7 @@ Layer_ *layerButtonsConstructor(app_data_t *app_data)
 	return tempLayer;
 }
 
-// 
+//
 
 void show_screen(void *param0)
 {
@@ -194,7 +206,6 @@ void show_screen(void *param0)
 		reg_menu(&screen_data, 0); // 	menu_overlay=0
 
 		*app_data_p = app_data;
-
 	}
 	else
 	{ // if the function is started for the first time i.e. from the menu
@@ -220,23 +231,25 @@ void show_screen(void *param0)
 
 		// BEGIN intialize layers here
 
-
-		Layer_ *layerSplash = layerSplashConstructor(app_data); // the buttons are drawn as they are created,
+		/* 		Layer_ *layerSplash = layerSplashConstructor(app_data); // the buttons are drawn as they are created,
 		setActiveLayerViewport(getCurrentViewport(app_data), layerSplash); // assigning this layer
 																	 // to the active slot of this viewport
-
+ */
 		Layer_ *layerButtons = layerButtonsConstructor(app_data);
 		app_data->vp.right = layerButtons;
 
-		//setActiveLayerViewport(getCurrentViewport(app_data), layerButtons);
+		setActiveLayerViewport(getCurrentViewport(app_data), layerButtons);
 
 		// REFRESH LOOP
 
-		set_update_period(1, 1000);
-		refreshLayer(layerSplash, 1);
+		//set_update_period(1, 1000);
+		refreshLayer(layerButtons, 0);
+		//printErrorText("Hello world!");
+
+		repaint_screen_lines(0, VIDEO_Y);
 	}
 
-	caffeine(WEAK);
+	//caffeine(WEAK);
 }
 
 void key_press_screen()
@@ -257,7 +270,8 @@ void refreshScreen()
 	app_data_t *app_data = *app_data_p;				//	pointer to screen data
 
 	refreshLayer(getActiveLayer(app_data), 1);
-	set_update_period(1, 1000);
+	vibrate(2, 50, 150);
+	//set_update_period(1, 1000);
 	// set_update_period(0, 0); // refreshed, turning off timer refresh
 }
 
@@ -266,18 +280,21 @@ int dispatch_screen(void *param)
 	app_data_t **app_data_p = get_ptr_temp_buf_2(); //	pointer to a pointer to screen data
 	app_data_t *app_data = *app_data_p;				//	pointer to screen data
 
-	//Window_ *window = getCurrentWindow(app_data);
-
-	// in case of rendering the interface, update (transfer to video memory) the screen
-
 	struct gesture_ *gest = param;
 	int result = 0;
+
+	/* if (getActiveOverlayValue(getActiveLayer(app_data)))
+	{
+		resetActiveOverlayValue(getActiveLayer(app_data));
+		vibrate(3, 50, 150);
+	}
+	else
+	{ */
 
 	switch (gest->gesture)
 	{
 	case GESTURE_CLICK:
 	{
-
 		processTap(getActiveLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
 
 		break;
@@ -300,7 +317,9 @@ int dispatch_screen(void *param)
 	};
 	case GESTURE_SWIPE_DOWN:
 	{ // swipe down
-		// actions when swiping down
+
+		refreshLayer(getActiveLayer(app_data), 1); // manual refresh
+		set_update_period(0, 0);				   // disabling auto refresh
 		break;
 	};
 	default:
@@ -309,6 +328,7 @@ int dispatch_screen(void *param)
 		break;
 	};
 	}
+	//	}
 
 	return result;
 };

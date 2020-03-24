@@ -1,8 +1,20 @@
-// HELPER FUNCTIONS FOR BIPOS
+/////////////////////////////////////////////////////////////
 //
+//  BIPUI GRAPHICS FRAMEWORK v.0.8b
+//	for BipOS
+//  (C) Enrico Rovere 2020      <enricorov@gmail.com>
+//
+/////////////////////////////////////////////////////////////
+/****
+v.0.8b
+-   first version of the library
+
+*****/
 
 #ifndef __HELPERS__
 #define __HELPERS__
+
+// Debug defines, enable to see debug prints to screen
 
 #include "libbip_EN.h"
 //#include "buttons_test.h"
@@ -74,6 +86,14 @@ typedef struct TextBox_
 
 } TextBox_;
 
+typedef struct ParamsLayer_
+{
+
+    char overlay;       // 1: something was drawn on top of the layer and it should be refreshed
+
+
+} ParamsLayer_;
+
 typedef struct Layer_
 {
 
@@ -84,19 +104,19 @@ typedef struct Layer_
     short visible;          // is the layer visible?
     TextBox_ textBox;       // textbox for general usage
 
-    short state; //  usable to persist layer state after button presses
-
+    ParamsLayer_    params; // holding state of the layer
     void (*callbackFunction)();
 } Layer_;
 
 typedef struct Viewport_
 {
 
-    Layer_ *active, // layer currently drawn
-        *up,         // pointers to layers on all sides
-        *down,
-        *left,
-        *right;
+    Layer_          *active; // layer currently drawn
+    Layer_          *up;     // pointers to layers on all sides
+    Layer_          *down;
+    Layer_          *left;
+    Layer_          *right;
+
 } Viewport_;
 
 typedef struct Window_
@@ -144,7 +164,8 @@ const static TextBox_ DEFAULT_TEXTBOX = {
 
     .body = "TEXTBOX SAMPLE",
 
-    .colour = COLOR_SH_PURPLE
+    .colour = COLOR_SH_RED,
+    .background = COLOR_SH_BLACK
 
 };
 // PROTOTYPES --------------------------
@@ -183,6 +204,10 @@ void setViewportLayer(Viewport_ *vp, Layer_ *layer, Way_ dir);
 void setActiveLayerViewport(Viewport_ *vp, Layer_ *layer);
 void destroyViewport(Viewport_ *vp); // destroy the viewport
 void blank_screen(void);
+void printErrorText(char *error);
+char getActiveOverlayValue(Layer_ *layer);
+void resetActiveOverlayValue(Layer_ *layer);
+void setActiveOverlayValue(Layer_ *layer);
 
 // DEFINITIONS ---------------------------------------------------
 
@@ -280,7 +305,7 @@ void drawTextBox(TextBox_ *box)
 
     text_out_center(box->body,                                      // the text
                     (int)(box->topLeft.x + box->bottomRight.x) / 2, // median
-                    (int)box->topLeft.y);                          // slightly down
+                    (int)box->topLeft.y);                           // slightly down
 }
 
 void refreshWindow(Window_ *window)
@@ -309,8 +334,8 @@ short addLayerToWindow(Layer_ *layer, Window_ *window)
 
     if (window->index >= MAX_NUM_LAYERS)
     {
-        // window full
-        //printError("WINDOW FULL");
+        //window full
+        printErrorText("WINDOW FULL");
         return 1;
     }
     else
@@ -390,7 +415,7 @@ Layer_ *createLayer(void)
     else
     {
         _memclr(temp, sizeof(Layer_));
-        temp->state = 0;
+        temp->params.overlay = 0;       // sanity check
     }
 
     return temp;
@@ -551,7 +576,7 @@ short addButtonToLayer(button_ *button, Layer_ *layer)
     if (layer->index >= MAX_NUM_BUTTONS)
     {
         // layer full
-        //printError("DATABASE FULL");
+        printErrorText("DATABASE FULL");
         return 1;
     }
     else
@@ -655,6 +680,32 @@ short getLayerBackground(Layer_ *layer)
 {
 
     return layer->backgroundColour;
+}
+
+void setActiveOverlayValue(Layer_ *layer) {
+
+    layer->params.overlay = 1;     
+}
+
+void resetActiveOverlayValue(Layer_ *layer) {
+
+    layer->params.overlay = 0;     
+}
+
+char getActiveOverlayValue(Layer_ *layer) {
+
+    return layer->params.overlay;     // that's a long return
+}
+
+// DEBUG functions
+
+void printErrorText(char *error)
+{
+
+    TextBox_ tempText = DEFAULT_TEXTBOX;
+    _strcpy(tempText.body, error);
+
+    drawTextBox(&tempText);
 }
 
 #endif
