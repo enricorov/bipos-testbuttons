@@ -28,6 +28,9 @@ int main(int param0, char **argv)
 	show_screen((void *)param0);
 }
 
+
+// CALLBACK FUNCTIONS - functions associated to objects i.e. buttons or layers
+
 void testCallbackFunction(Layer_ *layer, button_ button, short button_id)
 {
 
@@ -43,89 +46,134 @@ void testCallbackFunction(Layer_ *layer, button_ button, short button_id)
 	set_update_period(1, 1000); // request a refresh
 }
 
+
+void splashCallbackFunction(Viewport_ *vp){
+
+	vp->active = vp->right;
+	refreshLayer(vp->active, 1);
+
+}
+
+// CONSTRUCTORS - here layers are allocated, initialized and the pointer to them is returned
+
 Layer_ *layerSplashConstructor(app_data_t *app_data)
 {
 
-	short width = 83; // handy parameters for easier button creation
+	Layer_ *tempLayer = createLayer();								 // allocating the space for the layer
+
+	setLayerBackground(tempLayer, COLOR_SH_PURPLE);
+
+	TextBox_ tempText = {
+
+		.topLeft = BIPUI_TOP_LEFT_POINT,
+		.bottomRight = BIPUI_BOTTOM_RIGHT_POINT,
+		.body = "This is a very",
+		.colour = COLOR_SH_WHITE,
+		.background = COLOR_SH_BLACK
+
+	};
+
+	setLayerTextBox(tempLayer, tempText);
+
+	button_ placeholderButton = {			// invisible button to move to next layer on tap
+			   BIPUI_TOP_LEFT_POINT,
+			   BIPUI_BOTTOM_RIGHT_POINT,
+			   "",
+			   COLOR_SH_BLACK,
+			   COLOR_SH_BLACK,
+			   COLOR_SH_WHITE,
+			   splashCallbackFunction
+	};
+
+	addButtonToLayer(&placeholderButton, tempLayer);
+
+	return tempLayer;
+
+}
+
+Layer_ *layerButtonsConstructor(app_data_t *app_data)
+{
+
+	short width = 82; // handy parameters for easier button creation
 	short horizontalSeparation = 6;
 	short verticalSeparation = 6;
-	short height = 46;
+	short height = 45;
 
-	Point_ otherTempPoint = UI_TOP_LEFT_POINT; // creating the two vertexes of the first box
-	otherTempPoint.y = DEFAULT_TEXT_HEIGHT;
+	Point_ tempPointOne = BIPUI_BOTTOM_LEFT_POINT;
+	Point_ tempPointTwo = BIPUI_BOTTOM_LEFT_POINT;
 
-	Point_ tempPoint;
-
-	tempPoint.x = otherTempPoint.x + width;
-	tempPoint.y = otherTempPoint.y + height;
+	tempPointOne.y -= height;
+	tempPointTwo.x += width;
 
 	Layer_ *tempLayer = createLayer();								 // allocating the space for the layer
-	setActiveLayerViewport(getCurrentViewport(app_data), tempLayer); // assigning this layer
+	//setActiveLayerViewport(getCurrentViewport(app_data), tempLayer); // assigning this layer
 																	 // to the active slot of this viewport
 
 	setLayerBackground(tempLayer, COLOR_SH_BLACK);
 
 	TextBox_ tempText = {
 
-		.topLeft = {10, 10},
-		.bottomRight = {160, 160},
-		.body = "Welcome! Tap to begin.",
+		.topLeft = BIPUI_TOP_LEFT_POINT,
+		.bottomRight = BIPUI_BOTTOM_RIGHT_POINT,
+		.body = "Tap any button",
 		.colour = COLOR_SH_WHITE,
 		.background = COLOR_SH_BLACK
 
 	};
 
-	setLayerTextBox(getActiveLayer(app_data), tempText);
+	setLayerTextBox(tempLayer, tempText);
 
 	button_ placeholderButton;
-	initButton(&placeholderButton, // initial button on the top left
-			   otherTempPoint,
-			   tempPoint,
+	initButton(&placeholderButton, // initial button on the bottom left
+			   tempPointOne,
+			   tempPointTwo,
 			   "HELLO",
 			   COLOR_SH_WHITE,
 			   COLOR_SH_BLUE,
 			   COLOR_SH_YELLOW,
 			   testCallbackFunction);
 
-	spawnButton(&placeholderButton, tempLayer);
+	addButtonToLayer(&placeholderButton, tempLayer);
 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, horizontalSeparation); // top right
 
 	_strcpy(placeholderButton.label, "WORLD");
 	placeholderButton.filling = COLOR_SH_RED;
 	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, verticalSeparation); // mid right
+	addButtonToLayer(&placeholderButton, tempLayer);
+	placeholderButton = moveInDirectionButton(&placeholderButton, UP, verticalSeparation); // mid right
 
 	_strcpy(placeholderButton.label, "ASDF");
 	placeholderButton.filling = COLOR_SH_AQUA;
-	placeholderButton.text = COLOR_SH_PURPLE;
+	placeholderButton.text = COLOR_SH_BLUE;
 
-	spawnButton(&placeholderButton, tempLayer);
+	addButtonToLayer(&placeholderButton, tempLayer);
 	placeholderButton = moveInDirectionButton(&placeholderButton, LEFT, horizontalSeparation); // mid left
 
 	_strcpy(placeholderButton.label, "DONG");
 	placeholderButton.filling = COLOR_SH_GREEN;
 	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, DOWN, verticalSeparation); // low left
+	addButtonToLayer(&placeholderButton, tempLayer);
+	placeholderButton = moveInDirectionButton(&placeholderButton, UP, verticalSeparation); // low left
 
-	_strcpy(placeholderButton.label, "FAM");
+	_strcpy(placeholderButton.label, "DEAD");
 	placeholderButton.filling = COLOR_SH_PURPLE;
 	placeholderButton.text = COLOR_SH_WHITE;
 
-	spawnButton(&placeholderButton, tempLayer);
+	addButtonToLayer(&placeholderButton, tempLayer);
 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, horizontalSeparation); // low right
 
-	_strcpy(placeholderButton.label, "BURP");
-	placeholderButton.filling = COLOR_SH_YELLOW;
+	_strcpy(placeholderButton.label, "BEEF");
+	placeholderButton.filling = COLOR_SH_BLUE;
 	placeholderButton.text = COLOR_SH_BLACK;
 
-	spawnButton(&placeholderButton, tempLayer);
+	addButtonToLayer(&placeholderButton, tempLayer);
 
 	return tempLayer;
 }
+
+// 
 
 void show_screen(void *param0)
 {
@@ -145,9 +193,8 @@ void show_screen(void *param0)
 		// 	create a new screen when the pointer temp_buf_2 is equal to 0 and the memory is not released
 		reg_menu(&screen_data, 0); // 	menu_overlay=0
 
-		*app_data_p = app_data; //	restore the data pointer after the reg_menu function
+		*app_data_p = app_data;
 
-		//   here we perform actions when returning from the overlay screen: restore data, etc.
 	}
 	else
 	{ // if the function is started for the first time i.e. from the menu
@@ -171,11 +218,22 @@ void show_screen(void *param0)
 		else //	if not, to the watchface
 			app_data->ret_f = show_watchface;
 
-		// initialization variables
+		// BEGIN intialize layers here
 
-		Layer_ *layerSplash = layerSplashConstructor(app_data);
 
-		//refreshLayer(layerSplash, 1);
+		Layer_ *layerSplash = layerSplashConstructor(app_data); // the buttons are drawn as they are created,
+		setActiveLayerViewport(getCurrentViewport(app_data), layerSplash); // assigning this layer
+																	 // to the active slot of this viewport
+
+		Layer_ *layerButtons = layerButtonsConstructor(app_data);
+		app_data->vp.right = layerButtons;
+
+		//setActiveLayerViewport(getCurrentViewport(app_data), layerButtons);
+
+		// REFRESH LOOP
+
+		set_update_period(1, 1000);
+		refreshLayer(layerSplash, 1);
 	}
 
 	caffeine(WEAK);
@@ -199,7 +257,8 @@ void refreshScreen()
 	app_data_t *app_data = *app_data_p;				//	pointer to screen data
 
 	refreshLayer(getActiveLayer(app_data), 1);
-	set_update_period(0, 0); // refreshed, turning off timer refresh
+	set_update_period(1, 1000);
+	// set_update_period(0, 0); // refreshed, turning off timer refresh
 }
 
 int dispatch_screen(void *param)

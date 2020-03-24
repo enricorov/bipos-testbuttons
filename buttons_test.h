@@ -20,5 +20,7 @@ int 	dispatch_screen (void *param);
 void 	refreshScreen();
 void 	testCallbackFunction(Layer_ *layer, button_ button, short button_id);
 Layer_ *layerSplashConstructor(app_data_t *app_data);
+Layer_ *layerButtonsConstructor(app_data_t *app_data);
+void 	splashCallbackFunction(Viewport_ *vp);
 
 #endif
