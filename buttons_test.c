@@ -1,12 +1,9 @@
 /*
-	Application template for Amazfit Bip BipOS
-	(C) Maxim Volkov  2019 <Maxim.N.Volkov@ya.ru>
-	
-	Application template loader for the BipOS
+	BipUI Buttons Demo
+	v.0.1
 	
 */
 
-//#include "helpers.h"
 #include "buttons_test.h"
 
 //	screen menu structure - each screen has its own
@@ -38,39 +35,34 @@ void simpleInteractionCallbackFunction(Layer_ *layer, button_ button, short butt
 
 	fill_screen_bg();
 
-	//text_out_center(button.label, VIDEO_Y / 2, VIDEO_X / 2 - 10);		// print label to center of screen
-
 	TextBox_ tempText = DEFAULT_TEXTBOX;
-	
+
+	tempText.background = button.filling;
+	tempText.colour = button.text;
 	char str[MAX_SIZE_TEXT_BOX];
 
-	switch (button_id)
-	{
+	_sprintf(&str, "btn_id: %d\nlabel: %s\ntopLeft: (%d, %d)\nbtmRight:(%d, %d)\n\nRefreshing in 6s\n or swipe down",
+			 button_id, button.label, button.topLeft.x, button.topLeft.y, button.bottomRight.x, button.bottomRight.y);
 
-	case 0:
-		_sprintf(&str, "This is the callback function called from button %d. I am testing this", button_id);
-		_strcpy(tempText.body, str);
-		break;
-	}
+	_strcpy(tempText.body, str);
 
 	drawTextBox(&tempText);
 
 	repaint_screen_lines(0, VIDEO_Y);
-	//setActiveOverlayValue(layer);
 
-	set_update_period(1, 1000); // request a refresh
+	set_update_period(1, 6000); // schedule a refresh in 6s
 }
 
-void splashCallbackFunction(Viewport_ *vp)
+/* void splashCallbackFunction(Viewport_ *vp)
 {
 
 	vp->active = vp->right;
 	refreshLayer(vp->active, 1);
-}
+} */
 
 // CONSTRUCTORS - here layers are allocated, initialized and the pointer to them is returned
 
-Layer_ *layerSplashConstructor(app_data_t *app_data)
+/* Layer_ *layerSplashConstructor(app_data_t *app_data)
 {
 
 	Layer_ *tempLayer = createLayer(); // allocating the space for the layer
@@ -101,7 +93,7 @@ Layer_ *layerSplashConstructor(app_data_t *app_data)
 	addButtonToLayer(&placeholderButton, tempLayer);
 
 	return tempLayer;
-}
+} */
 
 Layer_ *layerButtonsConstructor(app_data_t *app_data)
 {
@@ -177,8 +169,8 @@ Layer_ *layerButtonsConstructor(app_data_t *app_data)
 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, horizontalSeparation); // low right
 
 	_strcpy(placeholderButton.label, "BEEF");
-	placeholderButton.filling = COLOR_SH_BLUE;
-	placeholderButton.text = COLOR_SH_BLACK;
+	placeholderButton.filling = COLOR_SH_YELLOW;
+	placeholderButton.text = COLOR_SH_BLUE;
 
 	addButtonToLayer(&placeholderButton, tempLayer);
 
@@ -229,27 +221,23 @@ void show_screen(void *param0)
 		else //	if not, to the watchface
 			app_data->ret_f = show_watchface;
 
-		// BEGIN intialize layers here
-
-		/* 		Layer_ *layerSplash = layerSplashConstructor(app_data); // the buttons are drawn as they are created,
-		setActiveLayerViewport(getCurrentViewport(app_data), layerSplash); // assigning this layer
-																	 // to the active slot of this viewport
- */
-		Layer_ *layerButtons = layerButtonsConstructor(app_data);
-		app_data->vp.right = layerButtons;
-
-		setActiveLayerViewport(getCurrentViewport(app_data), layerButtons);
-
-		// REFRESH LOOP
-
-		//set_update_period(1, 1000);
-		refreshLayer(layerButtons, 0);
-		//printErrorText("Hello world!");
-
-		repaint_screen_lines(0, VIDEO_Y);
+		begin(app_data);
 	}
 
-	//caffeine(WEAK);
+	caffeine(WEAK);
+}
+
+void begin(app_data_t *app_data)
+{
+
+	// Create layers here
+
+	Layer_ *layerButtons = layerButtonsConstructor(app_data);
+	
+	setActiveLayerViewport(getCurrentViewport(app_data), layerButtons);  // assigning the created layer to othe active slot of the viewport
+
+	refreshLayer(getActiveLayer(app_data), 1);	// drawing the layer
+
 }
 
 void key_press_screen()
@@ -271,8 +259,7 @@ void refreshScreen()
 
 	refreshLayer(getActiveLayer(app_data), 1);
 	vibrate(2, 50, 150);
-	//set_update_period(1, 1000);
-	// set_update_period(0, 0); // refreshed, turning off timer refresh
+
 }
 
 int dispatch_screen(void *param)
@@ -319,7 +306,7 @@ int dispatch_screen(void *param)
 	{ // swipe down
 
 		refreshLayer(getActiveLayer(app_data), 1); // manual refresh
-		set_update_period(0, 0);				   // disabling auto refresh
+		set_update_period(0, 0);				   // removing scheduled refresh
 		break;
 	};
 	default:

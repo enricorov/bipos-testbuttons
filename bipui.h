@@ -11,8 +11,8 @@ v.0.8b
 
 *****/
 
-#ifndef __HELPERS__
-#define __HELPERS__
+#ifndef __BIPUI__
+#define __BIPUI__
 
 // Debug defines, enable to see debug prints to screen
 
@@ -21,7 +21,7 @@ v.0.8b
 
 #define MAX_NUM_BUTTONS 8
 #define MAX_SIZE_BUTTON_LABEL 20
-#define MAX_SIZE_TEXT_BOX 100
+#define MAX_SIZE_TEXT_BOX 120
 
 #define MAX_NUM_LAYERS 2
 
@@ -160,7 +160,7 @@ const static Point_ BIPUI_BOTTOM_RIGHT_POINT = {
 const static TextBox_ DEFAULT_TEXTBOX = {
 
     .topLeft = {10, 10},
-    .bottomRight = {VIDEO_Y - 10, VIDEO_X - 10},
+    .bottomRight = {VIDEO_Y - 5, VIDEO_X - 5},
 
     .body = "TEXTBOX SAMPLE",
 

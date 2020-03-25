@@ -370,7 +370,7 @@ extern	int 	_memcpy (void *dest, const void *srcptr, int num);                  
 extern	int		_memcmp	(const void* p1, const void* p2, int size);                       //	built-in firmware function memcmp
 
 extern 	int		get_tick_count();														  //	returns the number of ticks of the system timer from the moment of reboot (approximately 510 ticks per second)
-extern 	int		set_update_period (int cmd, int period); 								  //    start the timer of the current screen. callback timer screen_job_func; cmd=0 stop timer, cmd=1 timer plat for the number of ms equal period 
+extern 	int		set_update_period (int cmd, int period); 								  //    cmd=1 schedule a call to screen refreshing function in ms, cmd=0 cancel the current timer
 extern	int 	set_display_state_value(int state_1, int state);						  //	setting screen options
 extern	int 	set_close_timer(int delay_s);											  //	unclear, possibly setting backlight turnoff time. Don't use it.
 
