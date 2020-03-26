@@ -27,7 +27,7 @@ int main(int param0, char **argv)
 
 // CALLBACK FUNCTIONS - functions associated to objects i.e. buttons or layers
 
-void simpleInteractionCallbackFunction(Layer_ *layer, button_ button, short button_id)
+void simpleInteractionCallbackFunction(Layer_ *layer, Button_ button, short button_id)
 {
 
 	set_bg_color(getLongColour(button.filling));
@@ -106,8 +106,8 @@ Layer_ *layerButtonsConstructor(app_data_t *app_data)
 	Point_ tempPointOne = BIPUI_BOTTOM_LEFT_POINT;
 	Point_ tempPointTwo = BIPUI_BOTTOM_LEFT_POINT;
 
-	tempPointOne.y -= height;
-	tempPointTwo.x += width;
+	tempPointOne.y -= height;		// up by a height
+	tempPointTwo.x += width;		// right by a width
 
 	Layer_ *tempLayer = createLayer(); // allocating the space for the layer
 	//setActiveLayerViewport(getCurrentViewport(app_data), tempLayer); // assigning this layer
@@ -127,15 +127,9 @@ Layer_ *layerButtonsConstructor(app_data_t *app_data)
 
 	setLayerTextBox(tempLayer, tempText);
 
-	button_ placeholderButton;
-	initButton(&placeholderButton, // initial button on the bottom left
-			   tempPointOne,
-			   tempPointTwo,
-			   "HELLO",
-			   COLOR_SH_WHITE,
-			   COLOR_SH_BLUE,
-			   COLOR_SH_YELLOW,
-			   simpleInteractionCallbackFunction);
+	Button_ placeholderButton = DEFAULT_BUTTON_INSTANCE;
+	placeholderButton.topLeft = tempPointOne;
+	placeholderButton.bottomRight = tempPointTwo;
 
 	addButtonToLayer(&placeholderButton, tempLayer);
 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, horizontalSeparation); // top right

@@ -44,6 +44,15 @@ typedef enum Caffeine_t
 
 } Caffeine_t;
 
+typedef enum Style_t
+{
+
+    BUTTON_STYLE_DEFAULT_SQUARED,
+    BUTTON_STYLE_SQUARED_NOBORDER,
+    BUTTON_STYLE_ROUNDED_NOBORDER
+
+} Style_t;
+
 typedef enum Way_
 {
 
@@ -54,13 +63,15 @@ typedef enum Way_
 
 } Way_;
 
-typedef struct button_
+typedef struct ButtonParams_
 {
-    /* unsigned short  a,      // x1   upper left
-                    b,      // y1
-                    c,      // x2   lower right
-                    d;      // y2
- */
+    Style_t style;
+
+} ButtonParams_;
+
+typedef struct Button_
+{
+
     Point_ topLeft,
         bottomRight;
 
@@ -71,7 +82,10 @@ typedef struct button_
         text;
 
     void (*callbackFunction)();
-} button_;
+
+    ButtonParams_ params;   // style, state..
+
+} Button_;
 
 typedef struct TextBox_
 {
@@ -86,36 +100,35 @@ typedef struct TextBox_
 
 } TextBox_;
 
-typedef struct ParamsLayer_
+typedef struct LayerParams_
 {
 
-    char overlay;       // 1: something was drawn on top of the layer and it should be refreshed
+    char overlay; // 1: something was drawn on top of the layer and it should be refreshed
 
-
-} ParamsLayer_;
+} LayerParams_;
 
 typedef struct Layer_
 {
 
-    button_ buttonArray[MAX_NUM_BUTTONS]; // all buttons
+    Button_ buttonArray[MAX_NUM_BUTTONS]; // all buttons
     unsigned short index;                 // current valid button, init=0
 
     short backgroundColour; // background for the current Layer
     short visible;          // is the layer visible?
     TextBox_ textBox;       // textbox for general usage
 
-    ParamsLayer_    params; // holding state of the layer
+    LayerParams_ params; // holding state of the layer
     void (*callbackFunction)();
 } Layer_;
 
 typedef struct Viewport_
 {
 
-    Layer_          *active; // layer currently drawn
-    Layer_          *up;     // pointers to layers on all sides
-    Layer_          *down;
-    Layer_          *left;
-    Layer_          *right;
+    Layer_ *active; // layer currently drawn
+    Layer_ *up;     // pointers to layers on all sides
+    Layer_ *down;
+    Layer_ *left;
+    Layer_ *right;
 
 } Viewport_;
 
@@ -168,13 +181,48 @@ const static TextBox_ DEFAULT_TEXTBOX = {
     .background = COLOR_SH_BLACK
 
 };
+
+const static ButtonParams_ DEFAULT_BUTTON_PARAMETERS = {
+
+    .style = BUTTON_STYLE_DEFAULT_SQUARED
+
+};
+
+const static Button_ DEFAULT_BUTTON_INSTANCE = {
+
+    .topLeft = {50, 50},
+    .bottomRight = {100, 100},
+
+    .label = "UNDEFINED",
+    .border = COLOR_SH_WHITE,
+    .filling = COLOR_SH_PURPLE,
+    .text = COLOR_SH_WHITE,
+
+    .callbackFunction = 0,
+
+    .params = 0
+    
+};
+
+const static TextBox_ DEFAULT_TEXTBOX = {
+
+    .topLeft = {10, 10},
+    .bottomRight = {VIDEO_Y - 5, VIDEO_X - 5},
+
+    .body = "TEXTBOX SAMPLE",
+
+    .colour = COLOR_SH_RED,
+    .background = COLOR_SH_BLACK
+
+};
+
 // PROTOTYPES --------------------------
 
-void initButton(button_ *button, Point_ topLeft, Point_ bottomRight, // initialize button with these parameters
+void initButton(Button_ *button, Point_ topLeft, Point_ bottomRight, // initialize button with these parameters
                 char *label, short border, short filling, short text, void *callbackFunction);
-void spawnButton(button_ *button, Layer_ *layer);       // adds button to layer and draws it - note: graphics are shown only after calling refresh_screen_lines()
-void drawButton(button_ *button);                       // draws a button
-short addButtonToLayer(button_ *button, Layer_ *layer); // adds button to layer without drawing it
+void spawnButton(Button_ *button, Layer_ *layer);       // adds button to layer and draws it - note: graphics are shown only after calling refresh_screen_lines()
+void drawButton(Button_ *button, Style_t style);        // draws a button
+short addButtonToLayer(Button_ *button, Layer_ *layer); // adds button to layer without drawing it
 
 long getLongColour(short colour); // returns long from short versions
 void caffeine(Caffeine_t coffee); // set display backlight
@@ -184,8 +232,8 @@ void destroyLayer(Layer_ *layer);
 Layer_ *getActiveLayer(app_data_t *app_data);                           // returns layer currently in use
 Layer_ *getTopLayer(app_data_t *app_data);                              // returns topmost layer
 void processTap(Layer_ *layer, int x, int y);                           // iterates over a layer for the button corresponding to a tap
-button_ moveInDirectionButton(button_ *button, Way_ dir, short offset); // given a button, it changes its parameters to move it.
-button_ mirrorInDirectionButton(button_ *button, Way_ dir);             // mirrors a button with respect to one of the four axes
+Button_ moveInDirectionButton(Button_ *button, Way_ dir, short offset); // given a button, it changes its parameters to move it.
+Button_ mirrorInDirectionButton(Button_ *button, Way_ dir);             // mirrors a button with respect to one of the four axes
 short findHighestOpaqueLayer(Window_ *window);                          // returns the highest indexed layer with bg != COLOR_SH_MASK
 Window_ *getCurrentWindow(app_data_t *app_data);
 short getCurrentLayerIndex(Window_ *window);
@@ -389,7 +437,7 @@ void processTap(Layer_ *layer, int x, int y)
 {
 
     short i;
-    button_ temp;
+    Button_ temp;
     //Layer_ *layer = &window->layerArray[window->index];
 
     for (i = 0; i < layer->index; i++)
@@ -415,7 +463,7 @@ Layer_ *createLayer(void)
     else
     {
         _memclr(temp, sizeof(Layer_));
-        temp->params.overlay = 0;       // sanity check
+        temp->params.overlay = 0; // sanity check
     }
 
     return temp;
@@ -462,10 +510,10 @@ Layer_ *getActiveLayer(app_data_t *app_data)
     return app_data->vp.active;
 }
 
-button_ mirrorInDirectionButton(button_ *button, Way_ dir)
+Button_ mirrorInDirectionButton(Button_ *button, Way_ dir)
 {
 
-    button_ temp = *button;
+    Button_ temp = *button;
 
     switch (dir)
     {
@@ -503,10 +551,10 @@ button_ mirrorInDirectionButton(button_ *button, Way_ dir)
     return temp;
 }
 
-button_ moveInDirectionButton(button_ *button, Way_ dir, short separation)
+Button_ moveInDirectionButton(Button_ *button, Way_ dir, short separation)
 {
 
-    button_ temp = *button;
+    Button_ temp = *button;
     short width = (short)abssub(temp.topLeft.x, temp.bottomRight.x);  // considering the case when (a,b) is the bottom right point and
     short height = (short)abssub(temp.topLeft.y, temp.bottomRight.y); //      not the top left
 
@@ -560,7 +608,7 @@ button_ moveInDirectionButton(button_ *button, Way_ dir, short separation)
     return temp;
 }
 
-void spawnButton(button_ *button, Layer_ *layer)
+void spawnButton(Button_ *button, Layer_ *layer)
 {
 
     if (!addButtonToLayer(button, layer))
@@ -570,7 +618,7 @@ void spawnButton(button_ *button, Layer_ *layer)
     }
 }
 
-short addButtonToLayer(button_ *button, Layer_ *layer)
+short addButtonToLayer(Button_ *button, Layer_ *layer)
 {
 
     if (layer->index >= MAX_NUM_BUTTONS)
@@ -587,7 +635,7 @@ short addButtonToLayer(button_ *button, Layer_ *layer)
     }
 }
 
-void initButton(button_ *button, Point_ topLeft, Point_ bottomRight, char *label, short border,
+void initButton(Button_ *button, Point_ topLeft, Point_ bottomRight, char *label, short border,
                 short filling, short text, void *callbackFunction)
 { // populating the struct
 
@@ -602,29 +650,66 @@ void initButton(button_ *button, Point_ topLeft, Point_ bottomRight, char *label
     button->callbackFunction = callbackFunction;
 }
 
-void drawButton(button_ *button)
-{ // graphics of the button
+void drawButton(Button_ *button) // graphics of the button
+{
+    // fill_screen_bg();
+    // load_font();
 
-    set_bg_color(getLongColour(button->filling));
-    set_fg_color(getLongColour(button->border));
+    Button_ temp = *button;
+    Style_t style = temp.params.style;
 
-    //   fill_screen_bg();
-    draw_filled_rect_bg(button->topLeft.x,
-                        button->topLeft.y,
-                        button->bottomRight.x,
-                        button->bottomRight.y);
+    set_bg_color(getLongColour(temp.filling));
+    set_fg_color(getLongColour(temp.border));
 
-    draw_rect(button->topLeft.x,
-              button->topLeft.y,
-              button->bottomRight.x,
-              button->bottomRight.y);
+    switch (style)
+    {
+    case BUTTON_STYLE_DEFAULT_SQUARED:
 
-    //load_font();
-    set_fg_color(getLongColour(button->text));
+        draw_filled_rect_bg(temp.topLeft.x,
+                            temp.topLeft.y,
+                            temp.bottomRight.x,
+                            temp.bottomRight.y);
 
-    text_out_center(button->label,                                        // the text
-                    (int)(button->topLeft.x + button->bottomRight.x) / 2, // median
-                    (int)(button->topLeft.y + button->bottomRight.y) / 2 - 10);
+        draw_rect(temp.topLeft.x,
+                  temp.topLeft.y,
+                  temp.bottomRight.x,
+                  temp.bottomRight.y);
+
+        break;
+
+    case BUTTON_STYLE_SQUARED_NOBORDER:
+
+        draw_filled_rect_bg(temp.topLeft.x,
+                            temp.topLeft.y,
+                            temp.bottomRight.x,
+                            temp.bottomRight.y);
+        break;
+
+    case BUTTON_STYLE_ROUNDED_NOBORDER:             
+
+        draw_filled_rect_bg(temp.topLeft.x +1,
+                            temp.topLeft.y +1,
+                            temp.bottomRight.x -1,
+                            temp.bottomRight.y -1);
+        
+        draw_horizontal_line(temp.topLeft.y, temp.topLeft.x +1, temp.bottomRight.x -1);
+        draw_horizontal_line(temp.bottomRight.y, temp.topLeft.x +1, temp.bottomRight.x -1);
+            // scusa Claudio, ma così è più efficiente
+        draw_vertical_line(temp.topLeft.x, temp.topLeft.y +1, temp.bottomRight.y -1);
+        draw_vertical_line(temp.bottomRight.x, temp.topLeft.y +1, temp.bottomRight.y -1);
+
+        break;
+
+    default:{
+        // should never get here
+    };
+    }
+
+    set_fg_color(getLongColour(temp.text)); // Text is universal for now
+
+    text_out_center(temp.label,                                     // the text
+                    (int)(temp.topLeft.x + temp.bottomRight.x) / 2, // median
+                    (int)(temp.topLeft.y + temp.bottomRight.y) / 2 - 10);
 }
 
 void caffeine(Caffeine_t coffee)
@@ -682,19 +767,22 @@ short getLayerBackground(Layer_ *layer)
     return layer->backgroundColour;
 }
 
-void setActiveOverlayValue(Layer_ *layer) {
+void setActiveOverlayValue(Layer_ *layer)
+{
 
-    layer->params.overlay = 1;     
+    layer->params.overlay = 1;
 }
 
-void resetActiveOverlayValue(Layer_ *layer) {
+void resetActiveOverlayValue(Layer_ *layer)
+{
 
-    layer->params.overlay = 0;     
+    layer->params.overlay = 0;
 }
 
-char getActiveOverlayValue(Layer_ *layer) {
+char getActiveOverlayValue(Layer_ *layer)
+{
 
-    return layer->params.overlay;     // that's a long return
+    return layer->params.overlay; // that's a long return
 }
 
 // DEBUG functions
