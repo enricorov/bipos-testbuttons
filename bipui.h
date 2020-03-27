@@ -83,7 +83,7 @@ typedef struct Button_
 
     void (*callbackFunction)();
 
-    ButtonParams_ params;   // style, state..
+    ButtonParams_ params; // style, state..
 
 } Button_;
 
@@ -103,7 +103,8 @@ typedef struct TextBox_
 typedef struct LayerParams_
 {
 
-    char overlay; // 1: something was drawn on top of the layer and it should be refreshed
+    //char overlay; // 1: something was drawn on top of the layer and it should be refreshed
+    short refreshDelay;
 
 } LayerParams_;
 
@@ -143,9 +144,8 @@ typedef struct Window_
 typedef struct app_data_t
 {
     void *ret_f; //	the address of the return function
-                 //Layer_	mainLayer;
+
     Viewport_ vp;
-    //Window_ mainWindow;
 } app_data_t;
 
 // CONSTANTS ----------------------
@@ -200,19 +200,7 @@ const static Button_ DEFAULT_BUTTON_INSTANCE = {
 
     .callbackFunction = 0,
 
-    .params = 0
-    
-};
-
-const static TextBox_ DEFAULT_TEXTBOX = {
-
-    .topLeft = {10, 10},
-    .bottomRight = {VIDEO_Y - 5, VIDEO_X - 5},
-
-    .body = "TEXTBOX SAMPLE",
-
-    .colour = COLOR_SH_RED,
-    .background = COLOR_SH_BLACK
+    .params = {0}
 
 };
 
@@ -221,7 +209,7 @@ const static TextBox_ DEFAULT_TEXTBOX = {
 void initButton(Button_ *button, Point_ topLeft, Point_ bottomRight, // initialize button with these parameters
                 char *label, short border, short filling, short text, void *callbackFunction);
 void spawnButton(Button_ *button, Layer_ *layer);       // adds button to layer and draws it - note: graphics are shown only after calling refresh_screen_lines()
-void drawButton(Button_ *button, Style_t style);        // draws a button
+void drawButton(Button_ *button);                       // draws a button
 short addButtonToLayer(Button_ *button, Layer_ *layer); // adds button to layer without drawing it
 
 long getLongColour(short colour); // returns long from short versions
@@ -446,9 +434,9 @@ void processTap(Layer_ *layer, int x, int y)
         // was the tap inside the button?
         if (temp.topLeft.x < x && temp.bottomRight.x > x && temp.topLeft.y < y && temp.bottomRight.y > y)
         {
-            vibrate(1, 50, 0); // vibrate if successful
+            //vibrate(1, 50, 0); // vibrate if successful
             // set_close_timer(5); // paramose il culo
-            temp.callbackFunction(layer, temp, i);
+            temp.callbackFunction(layer, i);
         }
     }
 }
@@ -463,7 +451,7 @@ Layer_ *createLayer(void)
     else
     {
         _memclr(temp, sizeof(Layer_));
-        temp->params.overlay = 0; // sanity check
+        //temp->params.overlay = 0; // sanity check
     }
 
     return temp;
@@ -685,22 +673,25 @@ void drawButton(Button_ *button) // graphics of the button
                             temp.bottomRight.y);
         break;
 
-    case BUTTON_STYLE_ROUNDED_NOBORDER:             
+    case BUTTON_STYLE_ROUNDED_NOBORDER:
 
-        draw_filled_rect_bg(temp.topLeft.x +1,
-                            temp.topLeft.y +1,
-                            temp.bottomRight.x -1,
-                            temp.bottomRight.y -1);
-        
-        draw_horizontal_line(temp.topLeft.y, temp.topLeft.x +1, temp.bottomRight.x -1);
-        draw_horizontal_line(temp.bottomRight.y, temp.topLeft.x +1, temp.bottomRight.x -1);
-            // scusa Claudio, ma così è più efficiente
-        draw_vertical_line(temp.topLeft.x, temp.topLeft.y +1, temp.bottomRight.y -1);
-        draw_vertical_line(temp.bottomRight.x, temp.topLeft.y +1, temp.bottomRight.y -1);
+        draw_filled_rect_bg(temp.topLeft.x + 2,
+                            temp.topLeft.y + 2,
+                            temp.bottomRight.x - 2,
+                            temp.bottomRight.y - 2);
+
+        //set_fg_color(getLongColour(temp.filling));      // lines are drawn in the bg colour, apparently
+
+        draw_horizontal_line(temp.topLeft.y, temp.topLeft.x + 2, temp.bottomRight.x - 2);
+        draw_horizontal_line(temp.bottomRight.y, temp.topLeft.x + 2, temp.bottomRight.x - 2);
+        // scusa Claudio, ma così è più efficiente
+        draw_vertical_line(temp.topLeft.x, temp.topLeft.y + 2, temp.bottomRight.y - 2);
+        draw_vertical_line(temp.bottomRight.x, temp.topLeft.y + 2, temp.bottomRight.y - 2);
 
         break;
 
-    default:{
+    default:
+    {
         // should never get here
     };
     }
@@ -767,7 +758,7 @@ short getLayerBackground(Layer_ *layer)
     return layer->backgroundColour;
 }
 
-void setActiveOverlayValue(Layer_ *layer)
+/* void setActiveOverlayValue(Layer_ *layer)
 {
 
     layer->params.overlay = 1;
@@ -783,7 +774,7 @@ char getActiveOverlayValue(Layer_ *layer)
 {
 
     return layer->params.overlay; // that's a long return
-}
+} */
 
 // DEBUG functions
 

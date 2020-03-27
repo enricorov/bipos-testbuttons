@@ -27,8 +27,57 @@ int main(int param0, char **argv)
 
 // CALLBACK FUNCTIONS - functions associated to objects i.e. buttons or layers
 
-void simpleInteractionCallbackFunction(Layer_ *layer, Button_ button, short button_id)
+void changeRefreshDelay(Layer_ *layer, Button_ button, short button_id)
 {
+
+	LayerParams_ params = layer->params;
+
+	if (button_id == 2)
+	{ // "plus" button
+
+		if (params.refreshDelay <= 5000)
+			params.refreshDelay += 200;
+		else
+			vibrate(1, 150, 0);
+	}
+	else if (button_id == 3) // "minus" button
+	{
+		if (params.refreshDelay >= 500)
+			params.refreshDelay -= 200;
+		else
+			vibrate(1, 150, 0);
+	}
+}
+
+void toggleAutorefresh(Layer_ *layer, short button_id)
+{
+
+	Button_ *thisButton = &layer->buttonArray[button_id];
+
+	if (layer->params.refreshDelay == 0)
+	{ // auto refresh is off
+
+		_strcpy(layer->textBox.body, "Auto refresh ON");
+
+		layer->params.refreshDelay = 2000; // turning it on
+		thisButton->filling = COLOR_SH_GREEN;
+		_strcpy(thisButton->label, "ON");
+	}
+	else
+	{
+		_strcpy(layer->textBox.body, "Auto refresh OFF");
+
+		layer->params.refreshDelay = 0; // turning it off
+		thisButton->filling = COLOR_SH_RED;
+		_strcpy(thisButton->label, "OFF");
+	}
+
+	set_update_period(1, 20);		// triggering the update loop
+}
+
+void simpleInteractionCallbackFunction(Layer_ *layer, short button_id)
+{
+	Button_ button = layer->buttonArray[button_id];
 
 	set_bg_color(getLongColour(button.filling));
 	set_fg_color(getLongColour(button.text));
@@ -53,52 +102,15 @@ void simpleInteractionCallbackFunction(Layer_ *layer, Button_ button, short butt
 	set_update_period(1, 6000); // schedule a refresh in 6s
 }
 
-/* void splashCallbackFunction(Viewport_ *vp)
-{
-
-	vp->active = vp->right;
-	refreshLayer(vp->active, 1);
-} */
-
-// CONSTRUCTORS - here layers are allocated, initialized and the pointer to them is returned
-
-/* Layer_ *layerSplashConstructor(app_data_t *app_data)
-{
-
-	Layer_ *tempLayer = createLayer(); // allocating the space for the layer
-
-	setLayerBackground(tempLayer, COLOR_SH_PURPLE);
-
-	TextBox_ tempText = {
-
-		.topLeft = BIPUI_TOP_LEFT_POINT,
-		.bottomRight = BIPUI_BOTTOM_RIGHT_POINT,
-		.body = "This is a very",
-		.colour = COLOR_SH_WHITE,
-		.background = COLOR_SH_BLACK
-
-	};
-
-	setLayerTextBox(tempLayer, tempText);
-
-	button_ placeholderButton = {// invisible button to move to next layer on tap
-								 BIPUI_TOP_LEFT_POINT,
-								 BIPUI_BOTTOM_RIGHT_POINT,
-								 "",
-								 COLOR_SH_BLACK,
-								 COLOR_SH_BLACK,
-								 COLOR_SH_WHITE,
-								 splashCallbackFunction};
-
-	addButtonToLayer(&placeholderButton, tempLayer);
-
-	return tempLayer;
-} */
-
 Layer_ *layerButtonsConstructor(app_data_t *app_data)
 {
+	Layer_ *tempLayer = createLayer(); // allocating the space for the layer
 
-	short width = 82; // handy parameters for easier button creation
+	tempLayer->params.refreshDelay = 0; // initializing the params for the layer
+
+	setLayerBackground(tempLayer, COLOR_SH_BLACK);
+
+	short width = 81; // handy parameters for easier button creation
 	short horizontalSeparation = 6;
 	short verticalSeparation = 6;
 	short height = 45;
@@ -106,20 +118,14 @@ Layer_ *layerButtonsConstructor(app_data_t *app_data)
 	Point_ tempPointOne = BIPUI_BOTTOM_LEFT_POINT;
 	Point_ tempPointTwo = BIPUI_BOTTOM_LEFT_POINT;
 
-	tempPointOne.y -= height;		// up by a height
-	tempPointTwo.x += width;		// right by a width
-
-	Layer_ *tempLayer = createLayer(); // allocating the space for the layer
-	//setActiveLayerViewport(getCurrentViewport(app_data), tempLayer); // assigning this layer
-	// to the active slot of this viewport
-
-	setLayerBackground(tempLayer, COLOR_SH_BLACK);
+	tempPointOne.y -= height; // up by a height
+	tempPointTwo.x += width;  // right by a width
 
 	TextBox_ tempText = {
 
 		.topLeft = BIPUI_TOP_LEFT_POINT,
 		.bottomRight = BIPUI_BOTTOM_RIGHT_POINT,
-		.body = "Tap any button",
+		.body = "Auto refresh OFF",
 		.colour = COLOR_SH_WHITE,
 		.background = COLOR_SH_BLACK
 
@@ -128,50 +134,44 @@ Layer_ *layerButtonsConstructor(app_data_t *app_data)
 	setLayerTextBox(tempLayer, tempText);
 
 	Button_ placeholderButton = DEFAULT_BUTTON_INSTANCE;
+	placeholderButton.params.style = BUTTON_STYLE_ROUNDED_NOBORDER;
 	placeholderButton.topLeft = tempPointOne;
 	placeholderButton.bottomRight = tempPointTwo;
-
-	addButtonToLayer(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, horizontalSeparation); // top right
-
-	_strcpy(placeholderButton.label, "WORLD");
-	placeholderButton.filling = COLOR_SH_RED;
-	placeholderButton.text = COLOR_SH_BLACK;
-
-	addButtonToLayer(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, UP, verticalSeparation); // mid right
-
-	_strcpy(placeholderButton.label, "ASDF");
-	placeholderButton.filling = COLOR_SH_AQUA;
-	placeholderButton.text = COLOR_SH_BLUE;
-
-	addButtonToLayer(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, LEFT, horizontalSeparation); // mid left
-
-	_strcpy(placeholderButton.label, "DONG");
-	placeholderButton.filling = COLOR_SH_GREEN;
-	placeholderButton.text = COLOR_SH_BLACK;
-
-	addButtonToLayer(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, UP, verticalSeparation); // low left
-
-	_strcpy(placeholderButton.label, "DEAD");
-	placeholderButton.filling = COLOR_SH_PURPLE;
+	_strcpy(placeholderButton.label, "HELP");
+	placeholderButton.border = COLOR_SH_WHITE;
+	placeholderButton.filling = COLOR_SH_BLACK;
 	placeholderButton.text = COLOR_SH_WHITE;
 
-	addButtonToLayer(&placeholderButton, tempLayer);
-	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, horizontalSeparation); // low right
+	placeholderButton.callbackFunction = simpleInteractionCallbackFunction;
 
-	_strcpy(placeholderButton.label, "BEEF");
-	placeholderButton.filling = COLOR_SH_YELLOW;
-	placeholderButton.text = COLOR_SH_BLUE;
+	addButtonToLayer(&placeholderButton, tempLayer); // button 0
+	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, horizontalSeparation);
 
-	addButtonToLayer(&placeholderButton, tempLayer);
+	_strcpy(placeholderButton.label, "OFF");
+	placeholderButton.filling = COLOR_SH_RED;
+	placeholderButton.text = COLOR_SH_BLACK;
+	placeholderButton.callbackFunction = toggleAutorefresh;
+
+	addButtonToLayer(&placeholderButton, tempLayer); // button 1
+	placeholderButton = moveInDirectionButton(&placeholderButton, UP, verticalSeparation);
+
+	_strcpy(placeholderButton.label, "+");
+	placeholderButton.filling = COLOR_SH_BLACK;
+	placeholderButton.text = COLOR_SH_WHITE;
+	placeholderButton.callbackFunction = changeRefreshDelay;
+
+	addButtonToLayer(&placeholderButton, tempLayer); // button 2
+	placeholderButton = moveInDirectionButton(&placeholderButton, LEFT, horizontalSeparation);
+
+	_strcpy(placeholderButton.label, "-");
+	placeholderButton.filling = COLOR_SH_BLACK;
+	placeholderButton.text = COLOR_SH_WHITE;
+	placeholderButton.callbackFunction = changeRefreshDelay;
+
+	addButtonToLayer(&placeholderButton, tempLayer); // button 3
 
 	return tempLayer;
 }
-
-//
 
 void show_screen(void *param0)
 {
@@ -227,11 +227,10 @@ void begin(app_data_t *app_data)
 	// Create layers here
 
 	Layer_ *layerButtons = layerButtonsConstructor(app_data);
-	
-	setActiveLayerViewport(getCurrentViewport(app_data), layerButtons);  // assigning the created layer to othe active slot of the viewport
 
-	refreshLayer(getActiveLayer(app_data), 1);	// drawing the layer
+	setActiveLayerViewport(getCurrentViewport(app_data), layerButtons); // assigning the created layer to othe active slot of the viewport
 
+	refreshLayer(getActiveLayer(app_data), 1); // drawing the layer
 }
 
 void key_press_screen()
@@ -251,9 +250,17 @@ void refreshScreen()
 	app_data_t **app_data_p = get_ptr_temp_buf_2(); //	pointer to pointer to screen data
 	app_data_t *app_data = *app_data_p;				//	pointer to screen data
 
-	refreshLayer(getActiveLayer(app_data), 1);
-	vibrate(2, 50, 150);
+	char str[20];
 
+	if (getActiveLayer(app_data)->params.refreshDelay != 0)
+	{	
+		_sprintf(&str, "Period: %d", getActiveLayer(app_data)->params.refreshDelay);
+		text_out_center(&str, 88, 30);
+		set_update_period(1, (int) getActiveLayer(app_data)->params.refreshDelay);
+	}
+
+	refreshLayer(getActiveLayer(app_data), 1);
+	vibrate(1, 50, 150);
 }
 
 int dispatch_screen(void *param)
@@ -299,8 +306,8 @@ int dispatch_screen(void *param)
 	case GESTURE_SWIPE_DOWN:
 	{ // swipe down
 
-		refreshLayer(getActiveLayer(app_data), 1); // manual refresh
-		set_update_period(0, 0);				   // removing scheduled refresh
+		//refreshLayer(getActiveLayer(app_data), 1); // manual refresh
+		//set_update_period(0, 0);				   // removing scheduled refresh
 		break;
 	};
 	default:
