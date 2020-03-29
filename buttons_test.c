@@ -224,6 +224,8 @@ void show_screen(void *param0)
 void begin(app_data_t *app_data)
 {
 
+	load_font();
+
 	// Create layers here
 
 	Layer_ *layerButtons = layerButtonsConstructor(app_data);
