@@ -127,10 +127,15 @@ Layer_ *layerButtonsConstructor(app_data_t *app_data)
 
 	setLayerTextBox(tempLayer, tempText);
 
-	Button_ placeholderButton = DEFAULT_BUTTON_INSTANCE;
-	placeholderButton.topLeft = tempPointOne;
-	placeholderButton.bottomRight = tempPointTwo;
-
+	Button_ placeholderButton;
+	initButton(&placeholderButton, // initial button on the bottom left
+			   tempPointOne,
+			   tempPointTwo,
+			   "HELLO",
+			   COLOR_SH_WHITE,
+			   COLOR_SH_BLUE,
+			   COLOR_SH_YELLOW,
+			   simpleInteractionCallbackFunction);
 	addButtonToLayer(&placeholderButton, tempLayer);
 	placeholderButton = moveInDirectionButton(&placeholderButton, RIGHT, horizontalSeparation); // top right
 

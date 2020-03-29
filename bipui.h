@@ -434,7 +434,7 @@ void processTap(Layer_ *layer, int x, int y)
         // was the tap inside the button?
         if (temp.topLeft.x < x && temp.bottomRight.x > x && temp.topLeft.y < y && temp.bottomRight.y > y)
         {
-            //vibrate(1, 50, 0); // vibrate if successful
+            vibrate(1, 50, 0); // vibrate if successful
             // set_close_timer(5); // paramose il culo
             temp.callbackFunction(layer, i);
         }
