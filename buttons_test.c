@@ -66,8 +66,8 @@ void simpleInteractionCallbackFunction(Layer_ *layer, short button_id)
 
 	drawTextBox(&tempText);
 
-	//repaint_screen_lines(0, VIDEO_Y);
-	repaint_screen();
+	repaint_screen_lines(0, VIDEO_Y);
+	//repaint_screen();
 
 	set_update_period(1, 6000); // schedule a refresh in 6s
 }
@@ -234,7 +234,7 @@ void key_press_screen()
 		app_data_t **app_data_p = &app_data;
 	#else
 		app_data_t **app_data_p = get_ptr_temp_buf_2(); //	pointer to a pointer to screen data
-		app_data_t *app_data;							//	pointer to screen data
+		app_data_t *app_data = *app_data_p;							//	pointer to screen data
 	#endif
 	//destroyViewport(getCurrentViewport(app_data));
 
@@ -250,7 +250,7 @@ void refreshScreen()
 		app_data_t **app_data_p = &app_data;
 	#else
 		app_data_t **app_data_p = get_ptr_temp_buf_2(); //	pointer to a pointer to screen data
-		app_data_t *app_data;							//	pointer to screen data
+		app_data_t *app_data = *app_data_p;							//	pointer to screen data
 	#endif
 	refreshLayer(getActiveLayer(app_data), 1);
 	vibrate(2, 50, 150);
@@ -264,7 +264,7 @@ int interactionHandler(void *param)
 		app_data_t **app_data_p = &app_data;
 	#else
 		app_data_t **app_data_p = get_ptr_temp_buf_2(); //	pointer to a pointer to screen data
-		app_data_t *app_data;							//	pointer to screen data
+		app_data_t *app_data = *app_data_p;							//	pointer to screen data
 	#endif
 	
 	struct gesture_ *gest = param;
@@ -274,8 +274,8 @@ int interactionHandler(void *param)
 	{
 	case GESTURE_CLICK:
 	{
+		vibrate(1, 50, 0);
 		processTap(getActiveLayer(app_data), gest->touch_pos_x, gest->touch_pos_y);
-
 		break;
 	};
 	case GESTURE_SWIPE_RIGHT:
