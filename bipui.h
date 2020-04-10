@@ -2,7 +2,7 @@
 
 /////////////////////////////////////////////////////////////
 //
-//  BIPUI GRAPHICS FRAMEWORK v.0.8b
+//  BIPUI GRAPHICS FRAMEWORK v.0.0
 //	for BipOS
 //  (C) Enrico Rovere 2020      <enricorov@gmail.com>
 //

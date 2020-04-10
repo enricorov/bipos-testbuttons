@@ -96,8 +96,8 @@ if exist name.txt del name.txt
 @call :echoColor 0A "Done." 1 
 @call :echoColor 0B "Running ResPack..." 1
 %RESPACK_COMMAND%
-pause
-goto :cleanup
+@pause
+@goto :cleanup
 
 :cleanup
 
