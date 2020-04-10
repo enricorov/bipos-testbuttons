@@ -8,19 +8,21 @@
 
 #ifndef __APP_BUTTONS_H__
 #define __APP_BUTTONS_H__
-#define COLORS_COUNT	4
+#define COLORS_COUNT 4
 
-#include "helpers.h"
+#include "bipui.h"
 
 
 // template.c
-void 	show_screen (void *return_screen);
-void 	key_press_screen();
-int 	dispatch_screen (void *param);
-void 	refreshScreen();
-void 	testCallbackFunction(Layer_ *layer, button_ button, short button_id);
+int main_app(int param0);
+void show_screen(void *return_screen);
+void key_press_screen();
+int interactionHandler(void *param);
+void refreshScreen();
+void testCallbackFunction(Layer_ *layer, short button_id);
 Layer_ *layerSplashConstructor(app_data_t *app_data);
 Layer_ *layerButtonsConstructor(app_data_t *app_data);
-void 	splashCallbackFunction(Viewport_ *vp);
+void splashCallbackFunction(Viewport_ *vp);
+void begin(app_data_t *app_data);
 
 #endif
